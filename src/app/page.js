@@ -356,6 +356,7 @@ function PlantillaBull({ negocio, categorias, productos }) {
     // Parse theme and logo configuration from tema_tienda column
     let navbarType = 'texto';
     let logoUrl = '';
+    let logoSize = 70;
     let isDark = false;
     try {
         if (negocio.tema_tienda && negocio.tema_tienda.startsWith('{')) {
@@ -363,6 +364,7 @@ function PlantillaBull({ negocio, categorias, productos }) {
             isDark = configObj.theme === 'dark';
             navbarType = configObj.navbar_type || 'texto';
             logoUrl = configObj.logo_url || '';
+            logoSize = configObj.logo_size || 70;
         } else {
             isDark = negocio.tema_tienda === 'dark';
         }
@@ -492,7 +494,7 @@ function PlantillaBull({ negocio, categorias, productos }) {
 
                         <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4 z-10">
                             {navbarType === 'logo' && logoUrl && (
-                                <img src={logoUrl} alt="Logo" className="h-14 md:h-18 w-auto object-contain mb-3 drop-shadow-md transition-transform hover:scale-105" />
+                                <img src={logoUrl} alt="Logo" style={{ height: `${logoSize}px` }} className="w-auto object-contain mb-3 drop-shadow-md transition-transform hover:scale-105" />
                             )}
                             <h1 className="text-xl md:text-3xl font-black text-white tracking-tight drop-shadow-md mb-1.5 uppercase">{negocio.hero_titulo || negocio.nombre}</h1>
                             {negocio.hero_subtitulo && <p className="text-white/90 text-xs md:text-sm font-medium mb-3 drop-shadow-sm max-w-lg">{negocio.hero_subtitulo}</p>}
