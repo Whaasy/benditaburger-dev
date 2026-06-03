@@ -65,11 +65,9 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-gray-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <img
-          src="/logo.webp"
-          alt="Bendita Burger Logo"
-          className="mx-auto h-16 w-auto object-contain dark:invert-0"
-        />
+        <div className="mx-auto w-14 h-14 bg-yellow-500/10 border border-yellow-500/20 rounded-2xl flex items-center justify-center mb-4">
+          <Lock className="w-6 h-6 text-yellow-500" />
+        </div>
         <h2 className="mt-6 text-3xl font-black tracking-tight text-white uppercase">
           Administración
         </h2>
