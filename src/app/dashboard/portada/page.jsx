@@ -444,16 +444,10 @@ export default function PortadaConfigPage() {
             {/* Simulación Navbar */}
             <div className="bg-white px-4 py-3 flex items-center justify-between border-b border-gray-200">
               <div className="flex items-center gap-1.5">
-                {navbarType === "logo" && logoUrl ? (
-                  <img src={logoUrl} alt="Logo Preview" className="h-6 w-auto object-contain max-w-[90px]" />
-                ) : (
-                  <>
-                    <div className="w-2 h-2 rounded-full bg-red-600 shrink-0"></div>
-                    <span className="font-black text-sm uppercase tracking-tighter text-black truncate max-w-[120px]">
-                      {negocio?.nombre || "Bendita Burger"}
-                    </span>
-                  </>
-                )}
+                <div className="w-2 h-2 rounded-full bg-red-600 shrink-0"></div>
+                <span className="font-black text-sm uppercase tracking-tighter text-black truncate max-w-[120px]">
+                  {negocio?.nombre || "Bendita Burger"}
+                </span>
               </div>
               <div className="w-6 h-6 rounded bg-neutral-100 flex items-center justify-center">
                 <div className="w-3.5 h-3.5 border border-neutral-400 rounded-sm"></div>
@@ -481,6 +475,9 @@ export default function PortadaConfigPage() {
               />
 
               <div className="relative z-10 space-y-2">
+                {navbarType === "logo" && logoUrl && (
+                  <img src={logoUrl} alt="Logo Preview" className="h-10 w-auto object-contain mx-auto mb-2 drop-shadow-sm" />
+                )}
                 <h2 className="text-lg md:text-xl font-black text-white uppercase tracking-tight leading-tight drop-shadow-md">
                   {heroTitulo || negocio?.nombre || "Bendita Burger"}
                 </h2>

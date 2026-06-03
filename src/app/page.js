@@ -491,6 +491,9 @@ function PlantillaBull({ negocio, categorias, productos }) {
                         <div className="absolute inset-0 bg-black transition-opacity duration-300" style={{ opacity: overlayOpacity }}></div>
 
                         <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4 z-10">
+                            {navbarType === 'logo' && logoUrl && (
+                                <img src={logoUrl} alt="Logo" className="h-14 md:h-18 w-auto object-contain mb-3 drop-shadow-md transition-transform hover:scale-105" />
+                            )}
                             <h1 className="text-xl md:text-3xl font-black text-white tracking-tight drop-shadow-md mb-1.5 uppercase">{negocio.hero_titulo || negocio.nombre}</h1>
                             {negocio.hero_subtitulo && <p className="text-white/90 text-xs md:text-sm font-medium mb-3 drop-shadow-sm max-w-lg">{negocio.hero_subtitulo}</p>}
 
@@ -506,16 +509,10 @@ function PlantillaBull({ negocio, categorias, productos }) {
 
                             {/* FILA SUPERIOR (MÓVIL) / LADO IZQUIERDO (DESKTOP) */}
                             <div className="flex items-center justify-between w-full md:w-auto">
-                                {/* NOMBRE DEL NEGOCIO / LOGO */}
+                                {/* NOMBRE DEL NEGOCIO */}
                                 <div className="flex-shrink-0 flex items-center cursor-pointer gap-2" onClick={() => { setVistaActual("catalogo"); window.scrollTo(0, 0); }}>
-                                    {navbarType === 'logo' && logoUrl ? (
-                                        <img src={logoUrl} alt={negocio.nombre} className="h-8 sm:h-9 w-auto object-contain max-w-[150px] transition-transform hover:scale-105" />
-                                    ) : (
-                                        <>
-                                            <div className="w-2.5 h-2.5 rounded-full bg-[var(--brand)] shadow-[0_0_10px_var(--brand)] shrink-0"></div>
-                                            <span className="font-black text-lg sm:text-xl uppercase tracking-tighter text-[var(--text-main)] truncate max-w-[240px] sm:max-w-[320px]">{negocio.nombre}</span>
-                                        </>
-                                    )}
+                                    <div className="w-2.5 h-2.5 rounded-full bg-[var(--brand)] shadow-[0_0_10px_var(--brand)] shrink-0"></div>
+                                    <span className="font-black text-lg sm:text-xl uppercase tracking-tighter text-[var(--text-main)] truncate max-w-[240px] sm:max-w-[320px]">{negocio.nombre}</span>
                                 </div>
 
                                 {/* CARRITO MOBILE */}
