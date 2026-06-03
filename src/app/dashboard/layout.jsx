@@ -132,6 +132,7 @@ export default function DashboardLayout({ children }) {
   const navLinks = [
     { nombre: "Burgers y Bebidas", ruta: "/dashboard/productos", icono: Store },
     { nombre: "Configuración de WhatsApp", ruta: "/dashboard/configuracion", icono: Settings },
+    { nombre: "Portada del Catálogo", ruta: "/dashboard/portada", icono: Palette },
   ];
 
   // Cálculo para los carteles grandes del Dashboard

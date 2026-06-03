@@ -107,9 +107,9 @@ export default function ConfiguracionesPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-8 pb-10 font-sans">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Configuración</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Contacto y Horarios</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          Actualiza el número de pedidos y los horarios de atención de tu negocio.
+          Actualiza los datos principales de contacto de WhatsApp y horarios de atención al cliente.
         </p>
       </div>
 
@@ -136,7 +136,7 @@ export default function ConfiguracionesPage() {
                 value={whatsapp}
                 onChange={(e) => setWhatsapp(e.target.value)}
                 required
-                className="w-full bg-white dark:bg-[#1A1A1E] text-gray-900 dark:text-white border border-gray-300 dark:border-neutral-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 shadow-sm"
+                className="w-full bg-white dark:bg-[#1A1A1E] text-gray-900 dark:text-white border border-gray-300 dark:border-neutral-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 shadow-sm"
                 placeholder="Ej: 5491123456789"
               />
               <p className="text-xs text-gray-500">
@@ -172,7 +172,7 @@ export default function ConfiguracionesPage() {
                 type="checkbox"
                 checked={horariosActivo}
                 onChange={(e) => setHorariosActivo(e.target.checked)}
-                className="w-5 h-5 rounded border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer"
+                className="w-5 h-5 rounded border-gray-300 text-red-600 focus:ring-red-500 cursor-pointer"
               />
             </div>
 
@@ -187,7 +187,7 @@ export default function ConfiguracionesPage() {
                     value={horarioApertura}
                     onChange={(e) => setHorarioApertura(e.target.value)}
                     required={horariosActivo}
-                    className="w-full bg-white dark:bg-[#1A1A1E] text-gray-900 dark:text-white border border-gray-300 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full bg-white dark:bg-[#1A1A1E] text-gray-900 dark:text-white border border-gray-300 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -199,7 +199,7 @@ export default function ConfiguracionesPage() {
                     value={horarioCierre}
                     onChange={(e) => setHorarioCierre(e.target.value)}
                     required={horariosActivo}
-                    className="w-full bg-white dark:bg-[#1A1A1E] text-gray-900 dark:text-white border border-gray-300 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full bg-white dark:bg-[#1A1A1E] text-gray-900 dark:text-white border border-gray-300 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                   />
                 </div>
               </div>
