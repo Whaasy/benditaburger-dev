@@ -137,10 +137,10 @@ export default function ConfiguracionesPage() {
                 onChange={(e) => setWhatsapp(e.target.value)}
                 required
                 className="w-full bg-white dark:bg-[#1A1A1E] text-gray-900 dark:text-white border border-gray-300 dark:border-neutral-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 shadow-sm"
-                placeholder="Ej: 5491133334444"
+                placeholder="Ej: 5491123456789"
               />
               <p className="text-xs text-gray-500">
-                Los clientes serán redirigidos a este número de WhatsApp con el detalle de su pedido. Incluye código de país y de área, sin símbolos '+' ni espacios (Ej: 5491133334444).
+                Los clientes serán redirigidos a este número de WhatsApp con el detalle de su pedido. Incluye código de país y de área, sin símbolos '+' ni espacios (Ej: 5491123456789).
               </p>
             </div>
           </div>
