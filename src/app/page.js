@@ -64,16 +64,24 @@ function CheckoutBull({ negocio, carrito, total, onBack, brandColor, brandTextCo
     const [direccion, setDireccion] = useState("");
     const [pago, setPago] = useState("efectivo"); // efectivo | transferencia
     const [aclaraciones, setAclaraciones] = useState("");
+    const [errorNombre, setErrorNombre] = useState("");
+    const [errorDireccion, setErrorDireccion] = useState("");
 
     const enviarPedido = () => {
+        let hasErrors = false;
         if (!nombre.trim()) {
-            alert("Por favor, ingresá tu nombre.");
-            return;
+            setErrorNombre("Por favor, ingresá tu nombre.");
+            hasErrors = true;
+        } else {
+            setErrorNombre("");
         }
         if (entrega === "delivery" && !direccion.trim()) {
-            alert("Por favor, ingresá tu dirección para el envío.");
-            return;
+            setErrorDireccion("Por favor, ingresá tu dirección para el envío.");
+            hasErrors = true;
+        } else {
+            setErrorDireccion("");
         }
+        if (hasErrors) return;
 
         // Armar el mensaje de WhatsApp de forma profesional
         let msg = `🍔 *PEDIDO NUEVO - BENDITA BURGER* 🍔\n\n`;
@@ -141,6 +149,7 @@ function CheckoutBull({ negocio, carrito, total, onBack, brandColor, brandTextCo
                             onChange={(e) => setNombre(e.target.value)}
                             className="w-full bg-[var(--bg-main)] border border-[var(--border)] text-[var(--text-main)] text-sm rounded-xl px-4 py-3 bull-input transition-all"
                         />
+                        {errorNombre && <p className="text-red-500 text-xs font-bold mt-1.5">{errorNombre}</p>}
                     </div>
                 </div>
 
@@ -174,6 +183,7 @@ function CheckoutBull({ negocio, carrito, total, onBack, brandColor, brandTextCo
                                 onChange={(e) => setDireccion(e.target.value)}
                                 className="w-full bg-[var(--bg-main)] border border-[var(--border)] text-[var(--text-main)] text-sm rounded-xl px-4 py-3 bull-input transition-all"
                             />
+                            {errorDireccion && <p className="text-red-500 text-xs font-bold mt-1.5">{errorDireccion}</p>}
                         </div>
                     )}
                 </div>
@@ -808,7 +818,7 @@ function PlantillaBull({ negocio, categorias, productos }) {
                                         <div className="flex-1">
                                             <h4 className="font-black text-[var(--text-main)] text-xs uppercase leading-tight pr-6">{item.producto.nombre} {item.variante && <span className="text-[var(--brand)]">({item.variante.nombre})</span>}</h4>
                                             {item.adicionales && item.adicionales.length > 0 && (
-                                                <p className="text-[9px] text-[var(--brand)] mt-0.5 font-bold">
+                                                <p className="text-[9px] text-green-600 dark:text-green-500 mt-0.5 font-bold">
                                                     + Extras: {item.adicionales.map(a => a.nombre).join(", ")}
                                                 </p>
                                             )}
