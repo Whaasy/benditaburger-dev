@@ -855,8 +855,8 @@ function PlantillaBull({ negocio, categorias, productos }) {
 // ----------------------------------------------------
 const MOCK_NEGOCIO = {
     nombre: "Bendita Burger",
-    color_principal: "#EAB308", // Yellow Gold
-    tema_tienda: "dark", // Sleek dark mode for premium look
+    color_principal: "#f5290f",
+    tema_tienda: "light",
     plan: "premium",
     whatsapp: "5491133334444",
     red_instagram: "https://instagram.com/benditaburger",

@@ -93,8 +93,8 @@ export default function DashboardLayout({ children }) {
             plan: "pro",
             estado_pago: "activo",
             whatsapp: "5491133334444",
-            color_principal: "#EAB308",
-            tema_tienda: "dark"
+            color_principal: "#f5290f",
+            tema_tienda: "light"
           }])
           .select()
           .maybeSingle();
