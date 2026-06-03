@@ -67,9 +67,8 @@ export default function DashboardLayout({ children }) {
 
       const isAdmin = user.user_metadata?.role === "admin";
 
-      const [adminRes, configRes, negocioRes] = await Promise.all([
+      const [adminRes, negocioRes] = await Promise.all([
         supabase.from("admins").select("email").eq("email", user.email).maybeSingle(),
-        supabase.from("configuracion_global").select("*").eq("id", 1).maybeSingle(),
         supabase.from("negocios").select("*").eq("user_id", user.id).maybeSingle()
       ]);
 
@@ -79,10 +78,6 @@ export default function DashboardLayout({ children }) {
         await supabase.auth.signOut();
         router.push("/login");
         return;
-      }
-
-      if (configRes.data) {
-        setConfigGlobal(configRes.data);
       }
 
       let negocioData = negocioRes.data;
@@ -151,11 +146,9 @@ export default function DashboardLayout({ children }) {
 
         <div className="flex h-16 shrink-0 items-center px-6 border-b border-gray-100 dark:border-neutral-800">
           <Link href="/dashboard" className="flex items-center transition-opacity hover:opacity-80">
-            <img
-              src="/logo.webp"
-              alt="Whaasy Logo"
-              className="h-9 w-auto object-contain dark:invert-0 invert"
-            />
+            <span className="font-black text-xl tracking-tighter uppercase text-gray-900 dark:text-white">
+              Bendita Burger
+            </span>
           </Link>
         </div>
 
@@ -182,7 +175,7 @@ export default function DashboardLayout({ children }) {
           </nav>
 
           <h3 className="mt-8 mb-3 px-3 text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-neutral-500">Accesos</h3>
-          <Link href={`/${negocio.slug}`} target="_blank" className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-500 transition-all hover:bg-gray-100 hover:text-gray-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white">
+          <Link href="/" target="_blank" className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-500 transition-all hover:bg-gray-100 hover:text-gray-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white">
             <ExternalLink className="h-5 w-5 text-gray-400 dark:text-neutral-500" />
             Ver catálogo online
           </Link>
@@ -212,11 +205,9 @@ export default function DashboardLayout({ children }) {
           <aside className="relative flex h-full w-[280px] max-w-[80%] flex-col bg-white shadow-2xl dark:bg-[#0a0a0a]">
 
             <div className="flex h-16 items-center justify-between border-b border-gray-100 px-6 dark:border-neutral-800">
-              <img
-                src="/logo.webp"
-                alt="Whaasy Logo"
-                className="h-8 w-auto object-contain dark:invert-0 invert"
-              />
+              <span className="font-black text-xl tracking-tighter uppercase text-gray-900 dark:text-white">
+                Bendita Burger
+              </span>
               <button onClick={() => setMenuAbierto(false)} className="rounded-md p-2 text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-neutral-800">
                 <X className="h-5 w-5" />
               </button>
@@ -239,11 +230,8 @@ export default function DashboardLayout({ children }) {
                 );
               })}
               <div className="my-2 border-t border-gray-100 dark:border-neutral-800"></div>
-              <Link href={`/${negocio.slug}`} target="_blank" className="flex items-center gap-3 rounded-lg px-3 py-3 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white">
+              <Link href="/" target="_blank" className="flex items-center gap-3 rounded-lg px-3 py-3 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white">
                 <ExternalLink className="h-5 w-5" /> Ver catálogo online
-              </Link>
-              <Link href="/dashboard/perfil" onClick={() => setMenuAbierto(false)} className="flex items-center gap-3 rounded-lg px-3 py-3 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white">
-                <User className="h-5 w-5" /> Mi Perfil
               </Link>
             </nav>
           </aside>
