@@ -69,14 +69,6 @@ export default function ProductosPage() {
   const [loadingAction, setLoadingAction] = useState(false);
   const [errorMensaje, setErrorMensaje] = useState(null);
 
-  // Límites
-  const limites = {
-    free: { productos: 5, categorias: 1 },
-    prueba: { productos: 50, categorias: 10 },
-    basic: { productos: 10, categorias: 3 },
-    pro: { productos: 50, categorias: 10 }
-  };
-
   const cargarDatos = async () => {
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
@@ -85,7 +77,7 @@ export default function ProductosPage() {
       .from("negocios")
       .select("*")
       .eq("user_id", user.id)
-      .single();
+      .maybeSingle();
 
     if (neg) {
       setNegocio(neg);
@@ -115,9 +107,9 @@ export default function ProductosPage() {
     cargarDatos();
   }, []);
 
-  const limActual = negocio ? limites[negocio.plan] : limites.free;
-  const limiteCategoriasAlcanzado = categorias.length >= limActual.categorias;
-  const limiteProductosAlcanzado = productos.length >= limActual.productos;
+  // No plan limits for custom single restaurant admin panel
+  const limiteCategoriasAlcanzado = false;
+  const limiteProductosAlcanzado = false;
 
   const handleCrearCategoria = async (e) => {
     e.preventDefault();
@@ -387,55 +379,43 @@ export default function ProductosPage() {
         <div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Menú y Variedades</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Gestiona tu menú. Usando {productos.length}/{limActual.productos} variedades.
+            Gestiona tu menú. Tienes {productos.length} variedades en total.
           </p>
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
-          {limiteCategoriasAlcanzado ? (
-            <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-lg text-xs font-bold border border-amber-200 dark:border-amber-800/50">
-              <AlertTriangle className="w-4 h-4" /> Límite de categorías
-            </div>
-          ) : (
-            <button
-              onClick={() => setModalCategoriaOpen(true)}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-[#0F0F11] text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors text-sm border border-gray-200 dark:border-neutral-700 shadow-sm"
-            >
-              Nueva Categoría
-            </button>
-          )}
+          <button
+            onClick={() => setModalCategoriaOpen(true)}
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-[#0F0F11] text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors text-sm border border-gray-200 dark:border-neutral-700 shadow-sm cursor-pointer"
+          >
+            Nueva Categoría
+          </button>
 
-          {limiteProductosAlcanzado ? (
-            <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-lg text-xs font-bold border border-amber-200 dark:border-amber-800/50">
-              <AlertTriangle className="w-4 h-4" /> Límite de variedades
-            </div>
-          ) : (
-            <button
-              onClick={() => {
-                setProductoEditandoId(null);
-                setNuevoProducto({
-                  nombre: "",
-                  descripcion: "",
-                  precio: "",
-                  categoria_id: categorias[0]?.id || "",
-                  imagen: null,
-                  tipo_producto: "normal",
-                  variantes_hamburguesa: {
-                    simple: { activo: false, precio: "" },
-                    doble: { activo: false, precio: "" },
-                    triple: { activo: false, precio: "" },
-                    x4: { activo: false, precio: "" }
-                  },
-                  adicionales: [],
-                  ingredientes_removibles_raw: ""
-                });
-                setCroppedImagePreview(null);
-                setModalProductoOpen(true);
-              }}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-gray-900 text-white dark:bg-white dark:text-black rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors text-sm shadow-sm"
-            >
-              <Plus className="w-4 h-4" /> Agregar Producto
-            </button>
-          )}
+          <button
+            onClick={() => {
+              setProductoEditandoId(null);
+              setNuevoProducto({
+                nombre: "",
+                descripcion: "",
+                precio: "",
+                categoria_id: categorias[0]?.id || "",
+                imagen: null,
+                tipo_producto: "normal",
+                variantes_hamburguesa: {
+                  simple: { activo: false, precio: "" },
+                  doble: { activo: false, precio: "" },
+                  triple: { activo: false, precio: "" },
+                  x4: { activo: false, precio: "" }
+                },
+                adicionales: [],
+                ingredientes_removibles_raw: ""
+              });
+              setCroppedImagePreview(null);
+              setModalProductoOpen(true);
+            }}
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-gray-900 text-white dark:bg-white dark:text-black rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors text-sm shadow-sm cursor-pointer"
+          >
+            <Plus className="w-4 h-4" /> Agregar Producto
+          </button>
         </div>
       </div>
 
@@ -523,31 +503,25 @@ export default function ProductosPage() {
               <button onClick={() => setModalCategoriaOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-md p-1 transition-colors"><X className="w-5 h-5" /></button>
             </div>
             <div className="p-6 bg-gray-50/50 dark:bg-neutral-900/20">
-              {limiteCategoriasAlcanzado ? (
-                <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-sm rounded-lg">
-                  Has alcanzado el límite de categorías de tu plan ({limActual.categorias}).
+              <form onSubmit={handleCrearCategoria} className="space-y-5">
+                <div className="space-y-1.5">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Nombre de la categoría</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ej: Hamburguesas, Bebidas..."
+                    value={nuevaCategoria}
+                    onChange={(e) => setNuevaCategoria(e.target.value)}
+                    className="w-full px-3 py-2 bg-white dark:bg-[#1A1A1E] border border-gray-300 dark:border-neutral-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all shadow-sm"
+                  />
                 </div>
-              ) : (
-                <form onSubmit={handleCrearCategoria} className="space-y-5">
-                  <div className="space-y-1.5">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Nombre de la categoría</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="Ej: Hamburguesas, Bebidas..."
-                      value={nuevaCategoria}
-                      onChange={(e) => setNuevaCategoria(e.target.value)}
-                      className="w-full px-3 py-2 bg-white dark:bg-[#1A1A1E] border border-gray-300 dark:border-neutral-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all shadow-sm"
-                    />
-                  </div>
-                  <div className="flex justify-end gap-3 pt-2">
-                    <button type="button" onClick={() => setModalCategoriaOpen(false)} className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">Cancelar</button>
-                    <button type="submit" disabled={loadingAction} className="px-4 py-2 text-sm font-medium bg-gray-900 text-white dark:bg-white dark:text-black rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 disabled:opacity-50 transition-colors shadow-sm">
-                      {loadingAction ? "Guardando..." : "Crear categoría"}
-                    </button>
-                  </div>
-                </form>
-              )}
+                <div className="flex justify-end gap-3 pt-2">
+                  <button type="button" onClick={() => setModalCategoriaOpen(false)} className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">Cancelar</button>
+                  <button type="submit" disabled={loadingAction} className="px-4 py-2 text-sm font-medium bg-gray-900 text-white dark:bg-white dark:text-black rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 disabled:opacity-50 transition-colors shadow-sm">
+                    {loadingAction ? "Guardando..." : "Crear categoría"}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </div>
@@ -567,10 +541,6 @@ export default function ProductosPage() {
                 <div className="text-center py-8">
                   <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Debes crear una categoría primero para poder añadir variedades.</p>
                   <button onClick={() => { setModalProductoOpen(false); setModalCategoriaOpen(true) }} className="px-4 py-2 text-sm font-medium bg-gray-900 text-white dark:bg-white dark:text-black rounded-lg">Crear Categoría</button>
-                </div>
-              ) : limiteProductosAlcanzado ? (
-                <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-sm rounded-lg">
-                  Límite de variedades alcanzado ({limActual.productos}). Mejora tu plan para añadir más.
                 </div>
               ) : (
                 <form id="product-form" onSubmit={handleCrearProducto} className="space-y-5">

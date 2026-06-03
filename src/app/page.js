@@ -264,7 +264,7 @@ function ClosedOverlay({ negocio, brandColor, brandTextColor, onPeekMenu }) {
 // ----------------------------------------------------
 function PlantillaBull({ negocio, categorias, productos }) {
     const [vistaActual, setVistaActual] = useState("catalogo");
-    const [categoriaActiva, setCategoriaActiva] = useState(categorias[0]?.id || "TODOS");
+    const [categoriaActiva, setCategoriaActiva] = useState("TODOS");
     const [busqueda, setBusqueda] = useState("");
     const [carrito, setCarrito] = useState([]);
 
@@ -878,141 +878,9 @@ const MOCK_NEGOCIO = {
     }
 };
 
-const MOCK_CATEGORIAS = [
-    { id: "hamburguesas", nombre: "Hamburguesas 🍔" },
-    { id: "papas", nombre: "Papas Fritas 🍟" },
-    { id: "bebidas", nombre: "Bebidas 🥤" },
-    { id: "postres", nombre: "Postres 🍰" }
-];
+const MOCK_CATEGORIAS = [];
 
-const MOCK_PRODUCTOS = [
-    {
-        id: "1",
-        categoria_id: "hamburguesas",
-        nombre: "Bendita Doble Cheddar",
-        descripcion: "Doble medallón de carne Angus (120g c/u), cuádruple cheddar, bacon crocante y aderezo especial de la casa en pan de papa.",
-        precio: 7500,
-        tipo_producto: "hamburguesa",
-        imagen_url: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=600&auto=format&fit=crop",
-        variantes: [
-            { id: "simple", nombre: "Simple", precio: 6000 },
-            { id: "doble", nombre: "Doble", precio: 7500 },
-            { id: "triple", nombre: "Triple", precio: 9000 }
-        ],
-        adicionales: [
-            { id: "extra_cheddar", nombre: "Extra Cheddar", precio: 800 },
-            { id: "extra_bacon", nombre: "Extra Bacon", precio: 1000 },
-            { id: "huevo_frito", nombre: "Huevo Frito", precio: 600 }
-        ],
-        ingredientes_removibles: ["Cebolla", "Tocino", "Aderezo de la casa"]
-    },
-    {
-        id: "2",
-        categoria_id: "hamburguesas",
-        nombre: "La Santa Burger",
-        descripcion: "Medallón de carne Angus, queso cheddar fundido, huevo frito, lechuga fresca, rodaja de tomate y mayonesa al ajo.",
-        precio: 7800,
-        tipo_producto: "hamburguesa",
-        imagen_url: "https://images.unsplash.com/photo-1586190848861-99aa4a171e90?q=80&w=600&auto=format&fit=crop",
-        variantes: [
-            { id: "doble", nombre: "Doble Medallón", precio: 7800 },
-            { id: "triple", nombre: "Triple Medallón", precio: 9300 }
-        ],
-        adicionales: [
-            { id: "extra_cheddar", nombre: "Extra Cheddar", precio: 800 },
-            { id: "cebolla_caramelizada", nombre: "Cebolla Caramelizada", precio: 500 }
-        ],
-        ingredientes_removibles: ["Huevo", "Lechuga", "Tomate"]
-    },
-    {
-        id: "3",
-        categoria_id: "hamburguesas",
-        nombre: "Gluten Free Burger",
-        descripcion: "Simple medallón de carne Angus, doble cheddar, lechuga y tomate en pan apto para celíacos.",
-        precio: 7200,
-        tipo_producto: "hamburguesa",
-        imagen_url: "https://images.unsplash.com/photo-1525059696034-4967a8e1dca2?q=80&w=600&auto=format&fit=crop",
-        variantes: [],
-        adicionales: [
-            { id: "extra_cheddar", nombre: "Extra Cheddar", precio: 800 }
-        ],
-        ingredientes_removibles: ["Lechuga", "Tomate"]
-    },
-    {
-        id: "4",
-        categoria_id: "hamburguesas",
-        nombre: "Veggie Bendita",
-        descripcion: "Medallón vegetariano a base de lentejas y garbanzos, queso cheddar, palta fresca, tomate y aderezo alioli.",
-        precio: 6900,
-        tipo_producto: "hamburguesa",
-        imagen_url: "https://images.unsplash.com/photo-1525059696034-4967a8e1dca2?q=80&w=600&auto=format&fit=crop",
-        variantes: [],
-        adicionales: [
-            { id: "cebolla_crispy", nombre: "Cebolla Crispy", precio: 600 }
-        ],
-        ingredientes_removibles: ["Palta", "Tomate", "Alioli"]
-    },
-    {
-        id: "5",
-        categoria_id: "papas",
-        nombre: "Papas Fritas Clásicas",
-        descripcion: "Papas fritas clásicas de corte bastón super crujientes.",
-        precio: 3000,
-        tipo_producto: "acompanamiento",
-        imagen_url: "https://images.unsplash.com/photo-1576107232684-1279f390859f?q=80&w=600&auto=format&fit=crop",
-        variantes: [],
-        adicionales: [],
-        ingredientes_removibles: []
-    },
-    {
-        id: "6",
-        categoria_id: "papas",
-        nombre: "Papas Benditas con Cheddar y Bacon",
-        descripcion: "Porción de papas fritas bañadas en salsa cheddar y crocante de panceta picada.",
-        precio: 4500,
-        tipo_producto: "acompanamiento",
-        imagen_url: "https://images.unsplash.com/photo-1585109649139-366815a0d713?q=80&w=600&auto=format&fit=crop",
-        variantes: [],
-        adicionales: [],
-        ingredientes_removibles: []
-    },
-    {
-        id: "7",
-        categoria_id: "bebidas",
-        nombre: "Coca-Cola Original 500ml",
-        descripcion: "Bebida gaseosa refrescante.",
-        precio: 1500,
-        tipo_producto: "bebida",
-        imagen_url: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?q=80&w=600&auto=format&fit=crop",
-        variantes: [],
-        adicionales: [],
-        ingredientes_removibles: []
-    },
-    {
-        id: "8",
-        categoria_id: "bebidas",
-        nombre: "Cerveza IPA Artesanal",
-        descripcion: "Pinta de cerveza artesanal rubia e intensa con notas cítricas.",
-        precio: 2500,
-        tipo_producto: "bebida",
-        imagen_url: "https://images.unsplash.com/photo-1608270586620-248524c67de9?q=80&w=600&auto=format&fit=crop",
-        variantes: [],
-        adicionales: [],
-        ingredientes_removibles: []
-    },
-    {
-        id: "9",
-        categoria_id: "postres",
-        nombre: "Chocotorta Bendita",
-        descripcion: "Postre clásico argentino de galletitas de chocolate rellenas de dulce de leche y queso crema.",
-        precio: 2800,
-        tipo_producto: "postre",
-        imagen_url: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?q=80&w=600&auto=format&fit=crop",
-        variantes: [],
-        adicionales: [],
-        ingredientes_removibles: []
-    }
-];
+const MOCK_PRODUCTOS = [];
 
 export default function App() {
     const [negocio, setNegocio] = useState(MOCK_NEGOCIO);
