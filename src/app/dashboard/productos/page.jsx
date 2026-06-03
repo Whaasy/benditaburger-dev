@@ -377,9 +377,9 @@ export default function ProductosPage() {
       {/* HEADER */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Menú y Variedades</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Burgers y Bebidas</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Gestiona tu menú. Tienes {productos.length} variedades en total.
+            Gestiona tu menú. Tienes {productos.length} Burgers y Bebidas en total.
           </p>
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
@@ -414,7 +414,7 @@ export default function ProductosPage() {
             }}
             className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-gray-900 text-white dark:bg-white dark:text-black rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors text-sm shadow-sm cursor-pointer"
           >
-            <Plus className="w-4 h-4" /> Agregar Producto
+            <Plus className="w-4 h-4" /> Agregar Burger o Bebida
           </button>
         </div>
       </div>
@@ -426,13 +426,13 @@ export default function ProductosPage() {
             <div className="w-16 h-16 bg-gray-50 dark:bg-neutral-800 rounded-full flex items-center justify-center mb-4 border border-gray-100 dark:border-neutral-700">
               <ImageIcon className="w-8 h-8 text-gray-400 dark:text-gray-500" />
             </div>
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">No hay variedades</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm mb-6">Aún no has añadido variedades a tu menú. Crea tu primera categoría y añade una variedad para comenzar.</p>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">No hay Burgers ni Bebidas</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm mb-6">Aún no has añadido nada a tu menú. Crea tu primera categoría y añade una Burger o Bebida para comenzar.</p>
             <button
               onClick={() => setModalProductoOpen(true)}
               className="flex items-center gap-2 px-5 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-black rounded-lg font-medium hover:bg-gray-800 transition-colors shadow-sm text-sm"
             >
-              <Plus className="w-4 h-4" /> Añadir el primero
+              <Plus className="w-4 h-4" /> Añadir la primera
             </button>
           </div>
         ) : (
@@ -441,7 +441,7 @@ export default function ProductosPage() {
               <thead>
                 <tr className="bg-gray-50/50 dark:bg-neutral-900/50 border-b border-gray-200 dark:border-neutral-800">
                   <th className="py-3 px-6 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-20">Foto</th>
-                  <th className="py-3 px-6 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Detalles de la Variedad</th>
+                  <th className="py-3 px-6 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Detalles</th>
                   <th className="py-3 px-6 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Categoría</th>
                   <th className="py-3 px-6 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Precio</th>
                   <th className="py-3 px-6 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-right">Acciones</th>

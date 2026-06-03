@@ -130,7 +130,7 @@ export default function DashboardLayout({ children }) {
   }
 
   const navLinks = [
-    { nombre: "Variedades y Menú", ruta: "/dashboard/productos", icono: Store },
+    { nombre: "Burgers y Bebidas", ruta: "/dashboard/productos", icono: Store },
     { nombre: "Configuración de WhatsApp", ruta: "/dashboard/configuracion", icono: Settings },
   ];
 
