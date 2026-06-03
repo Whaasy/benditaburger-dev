@@ -5,10 +5,10 @@ import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import Cropper from "react-easy-crop";
 import getCroppedImg from "@/lib/cropImage";
-import { Check, CheckCircle2, AlertCircle, Image as ImageIcon, Upload, Eye } from "lucide-react";
+import { Check, CheckCircle2, AlertCircle, Image as ImageIcon, Upload, Eye, Type } from "lucide-react";
 
 // Converts uploaded image to lightweight WEBP format
-const convertirAWebp = (fileOrBlob) => {
+const convertirAWebp = (fileOrBlob, filename = "image.webp") => {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.src = URL.createObjectURL(fileOrBlob);
@@ -19,7 +19,7 @@ const convertirAWebp = (fileOrBlob) => {
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0);
       canvas.toBlob((blob) => {
-        resolve(new File([blob], "hero.webp", { type: "image/webp" }));
+        resolve(new File([blob], filename, { type: "image/webp" }));
       }, 'image/webp', 0.85);
     };
     img.onerror = reject;
@@ -39,12 +39,17 @@ export default function PortadaConfigPage() {
   const [heroImagenUrl, setHeroImagenUrl] = useState("");
   const [heroOpacidad, setHeroOpacidad] = useState(60);
 
+  // Navbar branding state fields
+  const [navbarType, setNavbarType] = useState("texto"); // "texto" | "logo"
+  const [logoUrl, setLogoUrl] = useState("");
+
   // File Upload & Cropper state
   const [imageSrc, setImageSrc] = useState(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
   const [isCropping, setIsCropping] = useState(false);
+  const [cropType, setCropType] = useState("hero"); // "hero" | "logo"
   const [subiendoImagen, setSubiendoImagen] = useState(false);
 
   useEffect(() => {
@@ -70,9 +75,24 @@ export default function PortadaConfigPage() {
           setHeroSubtitulo(data.hero_subtitulo || "");
           setHeroImagenUrl(data.hero_imagen_url || "");
           setHeroOpacidad(data.hero_opacidad !== null && data.hero_opacidad !== undefined ? data.hero_opacidad : 60);
+
+          // Parse navbar logo details from serialized tema_tienda column
+          try {
+            if (data.tema_tienda && data.tema_tienda.startsWith('{')) {
+              const configObj = JSON.parse(data.tema_tienda);
+              setNavbarType(configObj.navbar_type || "texto");
+              setLogoUrl(configObj.logo_url || "");
+            } else {
+              setNavbarType("texto");
+              setLogoUrl("");
+            }
+          } catch (e) {
+            setNavbarType("texto");
+            setLogoUrl("");
+          }
         }
       } catch (error) {
-        console.error("Error loading hero configurations:", error);
+        console.error("Error loading configs:", error);
       } finally {
         setCargando(false);
       }
@@ -85,11 +105,18 @@ export default function PortadaConfigPage() {
     setCroppedAreaPixels(croppedAreaPixels);
   }, []);
 
-  const onFileChange = async (e) => {
+  const handleOpenFilePicker = (type) => {
+    setCropType(type);
+    const fileInput = document.getElementById(type === "hero" ? "hero-file-picker" : "logo-file-picker");
+    if (fileInput) fileInput.click();
+  };
+
+  const onFileChange = async (e, type) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
       const reader = new FileReader();
       reader.addEventListener("load", () => {
+        setCropType(type);
         setImageSrc(reader.result);
         setIsCropping(true);
       });
@@ -102,9 +129,10 @@ export default function PortadaConfigPage() {
     setSubiendoImagen(true);
     try {
       const croppedImageBlob = await getCroppedImg(imageSrc, croppedAreaPixels);
-      const webpFile = await convertirAWebp(croppedImageBlob);
+      const webpFile = await convertirAWebp(croppedImageBlob, cropType === "hero" ? "hero.webp" : "logo.webp");
 
-      const fileName = `hero-${Date.now()}.webp`;
+      const prefix = cropType === "hero" ? "hero" : "logo";
+      const fileName = `${prefix}-${Date.now()}.webp`;
       const filePath = `${negocio.id}/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
@@ -117,10 +145,16 @@ export default function PortadaConfigPage() {
         .from('productos')
         .getPublicUrl(filePath);
 
-      setHeroImagenUrl(publicUrlData.publicUrl);
+      if (cropType === "hero") {
+        setHeroImagenUrl(publicUrlData.publicUrl);
+        setMensaje({ tipo: "exito", texto: "Fondo de portada listo para guardar." });
+      } else {
+        setLogoUrl(publicUrlData.publicUrl);
+        setMensaje({ tipo: "exito", texto: "Logo del negocio listo para guardar." });
+      }
+      
       setIsCropping(false);
       setImageSrc(null);
-      setMensaje({ tipo: "exito", texto: "Imagen recortada y lista para guardar." });
       setTimeout(() => setMensaje({ tipo: "", texto: "" }), 3000);
     } catch (e) {
       console.error(e);
@@ -136,41 +170,62 @@ export default function PortadaConfigPage() {
     setMensaje({ tipo: "", texto: "" });
 
     try {
+      // Keep existing theme (light/dark) when updating tema_tienda configurations
+      let currentTheme = 'light';
+      try {
+        if (negocio.tema_tienda && negocio.tema_tienda.startsWith('{')) {
+          const configObj = JSON.parse(negocio.tema_tienda);
+          currentTheme = configObj.theme || 'light';
+        } else {
+          currentTheme = negocio.tema_tienda === 'dark' ? 'dark' : 'light';
+        }
+      } catch (e) {}
+
+      const newTemaTiendaConfig = JSON.stringify({
+        theme: currentTheme,
+        navbar_type: navbarType,
+        logo_url: logoUrl
+      });
+
       const { error } = await supabase
         .from("negocios")
         .update({ 
           hero_titulo: heroTitulo,
           hero_subtitulo: heroSubtitulo,
           hero_imagen_url: heroImagenUrl,
-          hero_opacidad: parseInt(heroOpacidad, 10)
+          hero_opacidad: parseInt(heroOpacidad, 10),
+          tema_tienda: newTemaTiendaConfig
         })
         .eq("id", negocio.id);
 
       if (error) throw error;
 
-      setMensaje({ tipo: "exito", texto: "Portada del catálogo actualizada correctamente." });
+      setMensaje({ tipo: "exito", texto: "Portada y cabecera actualizadas correctamente." });
+      
       setNegocio({ 
         ...negocio, 
         hero_titulo: heroTitulo,
         hero_subtitulo: heroSubtitulo,
         hero_imagen_url: heroImagenUrl,
-        hero_opacidad: parseInt(heroOpacidad, 10)
+        hero_opacidad: parseInt(heroOpacidad, 10),
+        tema_tienda: newTemaTiendaConfig
       });
 
-      // Dispatch event to update layout business header details immediately if listening
+      // Dispatch event to update layout business details immediately
       window.dispatchEvent(new CustomEvent("negocio-actualizado", {
         detail: { 
           hero_titulo: heroTitulo,
           hero_subtitulo: heroSubtitulo,
           hero_imagen_url: heroImagenUrl,
-          hero_opacidad: parseInt(heroOpacidad, 10)
+          hero_opacidad: parseInt(heroOpacidad, 10),
+          tema_tienda: newTemaTiendaConfig
         }
       }));
 
       setTimeout(() => setMensaje({ tipo: "", texto: "" }), 5000);
     } catch (error) {
       console.error(error);
-      setMensaje({ tipo: "error", texto: "Hubo un error al guardar la portada." });
+      setMensaje({ tipo: "error", texto: "Hubo un error al guardar los cambios." });
     } finally {
       setGuardando(false);
     }
@@ -183,21 +238,100 @@ export default function PortadaConfigPage() {
   );
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 pb-10 font-sans">
+    <div className="max-w-6xl mx-auto space-y-8 pb-10 font-sans">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Portada del Catálogo</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Diseño del Catálogo</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          Personaliza el título principal, el eslogan y la imagen de fondo de la portada de tu tienda.
+          Personaliza la cabecera (Navbar) y el banner principal (Hero) de tu tienda online.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-        {/* FORMULARIO */}
-        <form onSubmit={handleGuardarCambios} className="lg:col-span-3 space-y-6">
-          <section className="bg-white dark:bg-[#0F0F11] rounded-xl shadow-sm border border-gray-200 dark:border-neutral-800 overflow-hidden p-6 space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        {/* COLUMNA FORMULARIOS */}
+        <form onSubmit={handleGuardarCambios} className="lg:col-span-7 space-y-6">
+          
+          {/* SECCIÓN 1: CABECERA / NAVBAR (LOGO O NOMBRE) */}
+          <section className="bg-white dark:bg-[#0F0F11] rounded-xl shadow-sm border border-gray-200 dark:border-neutral-800 p-6 space-y-4">
+            <h2 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2 border-b border-gray-100 dark:border-neutral-800 pb-3">
+              Cabecera de la Tienda (Navbar)
+            </h2>
+            
+            <div className="space-y-3">
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                Identificación de Marca en el Navbar
+              </label>
+              
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setNavbarType("texto")}
+                  className={`flex items-center justify-center gap-2 p-3 rounded-lg border text-xs font-bold transition-all ${navbarType === "texto" ? "border-red-500 bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400" : "border-gray-200 dark:border-neutral-800 bg-white dark:bg-[#1A1A1E] text-gray-500 hover:text-gray-900 dark:hover:text-white"}`}
+                >
+                  <Type className="w-4 h-4" /> Nombre en Texto
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setNavbarType("logo")}
+                  className={`flex items-center justify-center gap-2 p-3 rounded-lg border text-xs font-bold transition-all ${navbarType === "logo" ? "border-red-500 bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400" : "border-gray-200 dark:border-neutral-800 bg-white dark:bg-[#1A1A1E] text-gray-500 hover:text-gray-900 dark:hover:text-white"}`}
+                >
+                  <ImageIcon className="w-4 h-4" /> Imagen de Logo
+                </button>
+              </div>
+            </div>
+
+            {navbarType === "logo" && (
+              <div className="space-y-3 pt-2 animate-in fade-in slide-in-from-top-1">
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  Logo del Negocio
+                </label>
+                
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                  <button
+                    type="button"
+                    onClick={() => handleOpenFilePicker("logo")}
+                    className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 dark:border-neutral-700 rounded-xl p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-neutral-900/50 transition-colors"
+                  >
+                    <Upload className="w-5 h-5 text-gray-400 mb-1" />
+                    <span className="text-xs font-bold text-gray-700 dark:text-gray-300">Subir Logo (.webp, .png, .jpg)</span>
+                    <span className="text-[10px] text-gray-400 mt-0.5">Se recortará en formato cuadrado</span>
+                  </button>
+                  
+                  <input
+                    id="logo-file-picker"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => onFileChange(e, "logo")}
+                    className="hidden"
+                  />
+                </div>
+
+                <div className="relative flex items-center py-1">
+                  <div className="flex-grow border-t border-gray-200 dark:border-neutral-800"></div>
+                  <span className="flex-shrink mx-4 text-xs font-bold text-gray-400">o pega enlace directo</span>
+                  <div className="flex-grow border-t border-gray-200 dark:border-neutral-800"></div>
+                </div>
+
+                <input
+                  type="text"
+                  value={logoUrl}
+                  onChange={(e) => setLogoUrl(e.target.value)}
+                  className="w-full bg-white dark:bg-[#1A1A1E] text-gray-900 dark:text-white border border-gray-300 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                  placeholder="Ej: https://images.unsplash.com/logo..."
+                />
+              </div>
+            )}
+          </section>
+
+          {/* SECCIÓN 2: PORTADA DE BANNER (HERO) */}
+          <section className="bg-white dark:bg-[#0F0F11] rounded-xl shadow-sm border border-gray-200 dark:border-neutral-800 p-6 space-y-4">
+            <h2 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2 border-b border-gray-100 dark:border-neutral-800 pb-3">
+              Banner Principal (Hero)
+            </h2>
+
             <div className="space-y-1.5">
               <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                Título del Catálogo
+                Título del Hero
               </label>
               <input
                 type="text"
@@ -210,41 +344,45 @@ export default function PortadaConfigPage() {
 
             <div className="space-y-1.5">
               <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                Subtítulo / Eslogan
+                Subtítulo / Eslogan del Hero
               </label>
               <textarea
                 value={heroSubtitulo}
                 onChange={(e) => setHeroSubtitulo(e.target.value)}
                 rows={2}
                 className="w-full bg-white dark:bg-[#1A1A1E] text-gray-900 dark:text-white border border-gray-300 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 resize-none"
-                placeholder="Ej: Las mejores hamburguesas artesanales de la ciudad..."
+                placeholder="Ej: Las mejores hamburguesas artesanales..."
               />
             </div>
 
-            {/* Subida de Imagen o Enlace */}
             <div className="space-y-3">
               <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                 Imagen de Fondo
               </label>
               
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                {/* Upload Button */}
-                <label className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 dark:border-neutral-700 rounded-xl p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-neutral-900/50 transition-colors">
-                  <Upload className="w-6 h-6 text-gray-400 mb-1" />
-                  <span className="text-xs font-bold text-gray-700 dark:text-gray-300">Subir nueva foto</span>
-                  <span className="text-[10px] text-gray-400 mt-0.5">Formatos recomendados: JPG, PNG, WEBP</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={onFileChange}
-                    className="hidden"
-                  />
-                </label>
+                <button
+                  type="button"
+                  onClick={() => handleOpenFilePicker("hero")}
+                  className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 dark:border-neutral-700 rounded-xl p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-neutral-900/50 transition-colors"
+                >
+                  <Upload className="w-5 h-5 text-gray-400 mb-1" />
+                  <span className="text-xs font-bold text-gray-700 dark:text-gray-300">Subir nueva foto de fondo</span>
+                  <span className="text-[10px] text-gray-400 mt-0.5">Se recortará en formato panorámico (16:9)</span>
+                </button>
+                
+                <input
+                  id="hero-file-picker"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => onFileChange(e, "hero")}
+                  className="hidden"
+                />
               </div>
 
-              <div className="relative flex items-center py-2">
+              <div className="relative flex items-center py-1">
                 <div className="flex-grow border-t border-gray-200 dark:border-neutral-800"></div>
-                <span className="flex-shrink mx-4 text-xs font-bold text-gray-400">o pega un enlace</span>
+                <span className="flex-shrink mx-4 text-xs font-bold text-gray-400">o pega enlace directo</span>
                 <div className="flex-grow border-t border-gray-200 dark:border-neutral-800"></div>
               </div>
 
@@ -257,7 +395,6 @@ export default function PortadaConfigPage() {
               />
             </div>
 
-            {/* Slider de Opacidad */}
             <div className="space-y-1.5 pt-2">
               <div className="flex justify-between text-sm font-semibold text-gray-700 dark:text-gray-300">
                 <span>Opacidad del Filtro Oscuro</span>
@@ -271,9 +408,6 @@ export default function PortadaConfigPage() {
                 onChange={(e) => setHeroOpacidad(e.target.value)}
                 className="w-full accent-red-600 cursor-pointer"
               />
-              <p className="text-[11px] text-gray-500">
-                Aumenta el oscurecimiento sobre la imagen para garantizar que el texto blanco siempre se lea con total claridad.
-              </p>
             </div>
           </section>
 
@@ -299,23 +433,41 @@ export default function PortadaConfigPage() {
           </div>
         </form>
 
-        {/* PREVIEW EN VIVO */}
-        <div className="lg:col-span-2 space-y-4">
+        {/* COLUMNA VISTA PREVIA (DINÁMICA) */}
+        <div className="lg:col-span-5 space-y-4">
           <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
             <Eye className="w-4 h-4" /> Vista Previa en Vivo
           </h3>
 
           <div className="sticky top-24 rounded-2xl overflow-hidden shadow-xl border border-gray-200 dark:border-neutral-800 bg-[#1A1A1E]">
-            {/* Header del Catálogo Preview */}
-            <div className="relative w-full h-[220px] bg-neutral-900 overflow-hidden flex flex-col items-center justify-center text-center p-4">
+            
+            {/* Simulación Navbar */}
+            <div className="bg-white px-4 py-3 flex items-center justify-between border-b border-gray-200">
+              <div className="flex items-center gap-1.5">
+                {navbarType === "logo" && logoUrl ? (
+                  <img src={logoUrl} alt="Logo Preview" className="h-6 w-auto object-contain max-w-[90px]" />
+                ) : (
+                  <>
+                    <div className="w-2 h-2 rounded-full bg-red-600 shrink-0"></div>
+                    <span className="font-black text-sm uppercase tracking-tighter text-black truncate max-w-[120px]">
+                      {negocio?.nombre || "Bendita Burger"}
+                    </span>
+                  </>
+                )}
+              </div>
+              <div className="w-6 h-6 rounded bg-neutral-100 flex items-center justify-center">
+                <div className="w-3.5 h-3.5 border border-neutral-400 rounded-sm"></div>
+              </div>
+            </div>
+
+            {/* Simulación Hero Banner */}
+            <div className="relative w-full h-[200px] bg-neutral-900 overflow-hidden flex flex-col items-center justify-center text-center p-4">
               {heroImagenUrl ? (
                 <img
                   src={heroImagenUrl}
-                  alt="Portada del Catálogo"
+                  alt="Portada Preview"
                   className="absolute inset-0 w-full h-full object-cover transition-all"
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                  }}
+                  onError={(e) => { e.target.style.display = 'none'; }}
                 />
               ) : (
                 <div className="absolute inset-0 bg-neutral-800 flex items-center justify-center">
@@ -323,64 +475,72 @@ export default function PortadaConfigPage() {
                 </div>
               )}
               
-              {/* Overlay negro dinámico */}
               <div
                 className="absolute inset-0 bg-black transition-opacity duration-300"
                 style={{ opacity: heroOpacidad / 100 }}
               />
 
-              {/* Textos del Hero */}
               <div className="relative z-10 space-y-2">
-                <h2 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight leading-tight drop-shadow-md">
+                <h2 className="text-lg md:text-xl font-black text-white uppercase tracking-tight leading-tight drop-shadow-md">
                   {heroTitulo || negocio?.nombre || "Bendita Burger"}
                 </h2>
                 {heroSubtitulo ? (
-                  <p className="text-white/90 text-[11px] md:text-xs font-medium max-w-xs mx-auto drop-shadow-sm leading-relaxed">
+                  <p className="text-white/90 text-[10px] md:text-xs font-medium max-w-xs mx-auto drop-shadow-sm leading-relaxed">
                     {heroSubtitulo}
                   </p>
                 ) : (
-                  <p className="text-white/60 text-[11px] italic">
+                  <p className="text-white/50 text-[10px] italic">
                     Sin subtítulo / eslogan
                   </p>
                 )}
 
-                <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full border border-green-500/50 bg-green-500/20 text-[9px] font-black uppercase tracking-wider text-green-400">
+                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-green-500/50 bg-green-500/20 text-[8px] font-black uppercase tracking-wider text-green-400">
                   <span className="w-1 h-1 rounded-full bg-green-500 animate-pulse"></span> Abierto ahora
                 </div>
               </div>
             </div>
             
-            {/* Simulación del resto del sitio */}
-            <div className="p-4 bg-white dark:bg-[#0F0F11] space-y-3">
+            {/* Simulación del Catálogo / Productos */}
+            <div className="p-4 bg-white space-y-3">
               <div className="flex gap-2">
-                <div className="h-6 w-12 bg-red-100 dark:bg-red-950/40 rounded-full border border-red-500/20"></div>
-                <div className="h-6 w-16 bg-neutral-100 dark:bg-neutral-800 rounded-full"></div>
-                <div className="h-6 w-16 bg-neutral-100 dark:bg-neutral-800 rounded-full"></div>
+                <div className="h-5 w-10 bg-red-100 rounded-full border border-red-500/10"></div>
+                <div className="h-5 w-12 bg-neutral-100 rounded-full"></div>
+                <div className="h-5 w-12 bg-neutral-100 rounded-full"></div>
               </div>
               <div className="grid grid-cols-2 gap-3 pt-1">
-                <div className="border border-neutral-100 dark:border-neutral-800 rounded-xl p-2 space-y-1.5">
-                  <div className="h-16 bg-neutral-100 dark:bg-neutral-800 rounded-lg"></div>
-                  <div className="h-3 w-3/4 bg-neutral-200 dark:bg-neutral-700 rounded"></div>
-                  <div className="h-3 w-1/2 bg-neutral-200 dark:bg-neutral-700 rounded"></div>
+                <div className="border border-neutral-100 rounded-xl p-2 space-y-1.5">
+                  <div className="h-14 bg-neutral-100 rounded-lg"></div>
+                  <div className="h-2 w-3/4 bg-neutral-200 rounded"></div>
+                  <div className="h-2 w-1/2 bg-neutral-200 rounded"></div>
                 </div>
-                <div className="border border-neutral-100 dark:border-neutral-800 rounded-xl p-2 space-y-1.5">
-                  <div className="h-16 bg-neutral-100 dark:bg-neutral-800 rounded-lg"></div>
-                  <div className="h-3 w-3/4 bg-neutral-200 dark:bg-neutral-700 rounded"></div>
-                  <div className="h-3 w-1/2 bg-neutral-200 dark:bg-neutral-700 rounded"></div>
+                <div className="border border-neutral-100 rounded-xl p-2 space-y-1.5">
+                  <div className="h-14 bg-neutral-100 rounded-lg"></div>
+                  <div className="h-2 w-3/4 bg-neutral-200 rounded"></div>
+                  <div className="h-2 w-1/2 bg-neutral-200 rounded"></div>
                 </div>
               </div>
             </div>
+
+            {/* Simulación de Footer Rojo */}
+            <div className="bg-[#f5290f] py-4 px-4 flex flex-col items-center justify-center gap-2 border-t border-black/10 text-white text-[8px] font-bold uppercase tracking-wider">
+              <div className="flex items-center gap-1.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-white"></div>
+                <span>{negocio?.nombre || "Bendita Burger"}</span>
+              </div>
+              <div className="text-white/60">&copy; {new Date().getFullYear()} Bendita Burger.</div>
+            </div>
+
           </div>
         </div>
       </div>
 
-      {/* MODAL RECORTE DE IMAGEN */}
+      {/* MODAL RECORTE DE IMAGEN GENERAL */}
       {isCropping && (
         <div className="fixed inset-0 z-[100] flex flex-col bg-black/95 animate-fade-in">
           <div className="flex items-center justify-between px-6 py-4 bg-[#0a0a0a] border-b border-neutral-800 text-white">
             <div>
-              <h3 className="font-bold text-lg">Recortar Portada</h3>
-              <p className="text-xs text-neutral-400">Ajusta el encuadre para la cabecera de la tienda online.</p>
+              <h3 className="font-bold text-lg">Recortar {cropType === "hero" ? "Imagen de Portada" : "Imagen de Logo"}</h3>
+              <p className="text-xs text-neutral-400">Ajusta el encuadre para optimizar la visualización.</p>
             </div>
             <button
               onClick={() => { setIsCropping(false); setImageSrc(null); }}
@@ -395,7 +555,7 @@ export default function PortadaConfigPage() {
               image={imageSrc}
               crop={crop}
               zoom={zoom}
-              aspect={16 / 9}
+              aspect={cropType === "hero" ? 16 / 9 : 1 / 1}
               onCropChange={setCrop}
               onCropComplete={onCropComplete}
               onZoomChange={setZoom}

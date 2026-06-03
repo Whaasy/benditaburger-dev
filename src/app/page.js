@@ -353,10 +353,26 @@ function PlantillaBull({ negocio, categorias, productos }) {
 
     const tiktokUrl = negocio.red_tiktok || "";
 
+    // Parse theme and logo configuration from tema_tienda column
+    let navbarType = 'texto';
+    let logoUrl = '';
+    let isDark = false;
+    try {
+        if (negocio.tema_tienda && negocio.tema_tienda.startsWith('{')) {
+            const configObj = JSON.parse(negocio.tema_tienda);
+            isDark = configObj.theme === 'dark';
+            navbarType = configObj.navbar_type || 'texto';
+            logoUrl = configObj.logo_url || '';
+        } else {
+            isDark = negocio.tema_tienda === 'dark';
+        }
+    } catch (e) {
+        isDark = negocio.tema_tienda === 'dark';
+    }
+
     // VARIABLES DE DISEÑO EXPERTO
     const brandColor = negocio.color_principal || '#EAB308';
     const brandTextColor = getContrastColor(brandColor);
-    const isDark = negocio.tema_tienda === 'dark';
 
     const themeStyles = {
         '--brand': brandColor,
@@ -490,10 +506,16 @@ function PlantillaBull({ negocio, categorias, productos }) {
 
                             {/* FILA SUPERIOR (MÓVIL) / LADO IZQUIERDO (DESKTOP) */}
                             <div className="flex items-center justify-between w-full md:w-auto">
-                                {/* NOMBRE DEL NEGOCIO (TEXTO ELEGANTE) */}
+                                {/* NOMBRE DEL NEGOCIO / LOGO */}
                                 <div className="flex-shrink-0 flex items-center cursor-pointer gap-2" onClick={() => { setVistaActual("catalogo"); window.scrollTo(0, 0); }}>
-                                    <div className="w-2.5 h-2.5 rounded-full bg-[var(--brand)] shadow-[0_0_10px_var(--brand)] shrink-0"></div>
-                                    <span className="font-black text-lg sm:text-xl uppercase tracking-tighter text-[var(--text-main)] truncate max-w-[240px] sm:max-w-[320px]">{negocio.nombre}</span>
+                                    {navbarType === 'logo' && logoUrl ? (
+                                        <img src={logoUrl} alt={negocio.nombre} className="h-8 sm:h-9 w-auto object-contain max-w-[150px] transition-transform hover:scale-105" />
+                                    ) : (
+                                        <>
+                                            <div className="w-2.5 h-2.5 rounded-full bg-[var(--brand)] shadow-[0_0_10px_var(--brand)] shrink-0"></div>
+                                            <span className="font-black text-lg sm:text-xl uppercase tracking-tighter text-[var(--text-main)] truncate max-w-[240px] sm:max-w-[320px]">{negocio.nombre}</span>
+                                        </>
+                                    )}
                                 </div>
 
                                 {/* CARRITO MOBILE */}
@@ -622,33 +644,33 @@ function PlantillaBull({ negocio, categorias, productos }) {
                     )}
 
                     {/* PIE DE PÁGINA */}
-                    <footer className="mt-auto bg-[var(--bg-card)] text-[var(--text-main)] pt-10 pb-6 px-6 border-t border-[var(--border)]">
+                    <footer className="mt-auto pt-10 pb-6 px-6 border-t border-white/10 text-white" style={{ backgroundColor: '#f5290f' }}>
                         <div className="max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div className="flex flex-col items-center md:items-start gap-3">
                                 <div className="flex items-center gap-2 mb-1">
-                                    <div className="w-2 h-2 rounded-full bg-[var(--brand)] shadow-[0_0_10px_var(--brand)]"></div>
-                                    <h4 className="font-black text-xl uppercase tracking-tight leading-none text-[var(--text-main)]">{negocio.nombre}</h4>
+                                    <div className="w-2 h-2 rounded-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)]"></div>
+                                    <h4 className="font-black text-xl uppercase tracking-tight leading-none text-white">{negocio.nombre}</h4>
                                 </div>
                             </div>
                             <div className="flex flex-col items-center md:items-center gap-1.5">
-                                <h5 className="font-black uppercase text-[9px] tracking-widest mb-1.5 text-[var(--brand)]">Contacto</h5>
-                                <a href={`https://wa.me/${negocio.whatsapp}`} target="_blank" rel="noreferrer" className="text-xs font-black flex items-center gap-2 hover:text-[var(--brand)] transition-colors bg-[var(--bg-main)] px-3 py-1.5 rounded-lg border border-[var(--border)]">
-                                    <WhatsAppIcon className="w-3.5 h-3.5 text-green-500" /> WhatsApp
+                                <h5 className="font-black uppercase text-[9px] tracking-widest mb-1.5 text-white/80">Contacto</h5>
+                                <a href={`https://wa.me/${negocio.whatsapp}`} target="_blank" rel="noreferrer" className="text-xs font-black flex items-center gap-2 hover:text-white/90 transition-colors bg-white/10 px-3 py-1.5 rounded-lg border border-white/10 text-white">
+                                    <WhatsAppIcon className="w-3.5 h-3.5 text-green-400" /> WhatsApp
                                 </a>
                             </div>
                             <div className="flex flex-col items-center md:items-end gap-1.5">
-                                <h5 className="font-black uppercase text-[9px] tracking-widest mb-1.5 text-[var(--brand)]">Redes Sociales</h5>
+                                <h5 className="font-black uppercase text-[9px] tracking-widest mb-1.5 text-white/80">Redes Sociales</h5>
                                 <div className="flex gap-1.5">
-                                    {negocio.red_instagram && <a href={negocio.red_instagram} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-lg bg-[var(--bg-main)] border border-[var(--border)] text-[var(--text-main)] hover:bg-[var(--brand)] hover:text-[var(--brand-text)] hover:border-[var(--brand)] transition-colors flex items-center justify-center"><InstagramIcon className="w-4 h-4" /></a>}
-                                    {negocio.red_facebook && <a href={negocio.red_facebook} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-lg bg-[var(--bg-main)] border border-[var(--border)] text-[var(--text-main)] hover:bg-[var(--brand)] hover:text-[var(--brand-text)] hover:border-[var(--brand)] transition-colors flex items-center justify-center"><FacebookIcon className="w-4 h-4" /></a>}
-                                    {tiktokUrl && <a href={tiktokUrl} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-lg bg-[var(--bg-main)] border border-[var(--border)] text-[var(--text-main)] hover:bg-[var(--brand)] hover:text-[var(--brand-text)] hover:border-[var(--brand)] transition-colors flex items-center justify-center"><TikTokIcon className="w-3.5 h-3.5" /></a>}
+                                    {negocio.red_instagram && <a href={negocio.red_instagram} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-lg bg-white/10 border border-white/10 text-white hover:bg-white/20 transition-colors flex items-center justify-center"><InstagramIcon className="w-4 h-4" /></a>}
+                                    {negocio.red_facebook && <a href={negocio.red_facebook} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-lg bg-white/10 border border-white/10 text-white hover:bg-white/20 transition-colors flex items-center justify-center"><FacebookIcon className="w-4 h-4" /></a>}
+                                    {tiktokUrl && <a href={tiktokUrl} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-lg bg-white/10 border border-white/10 text-white hover:bg-white/20 transition-colors flex items-center justify-center"><TikTokIcon className="w-3.5 h-3.5" /></a>}
                                 </div>
                             </div>
                         </div>
-                        <div className="max-w-[1400px] mx-auto mt-8 pt-4 border-t border-[var(--border)] text-center font-bold text-[10px] uppercase tracking-widest text-[var(--text-muted)] flex flex-col items-center gap-1.5">
+                        <div className="max-w-[1400px] mx-auto mt-8 pt-4 border-t border-white/10 text-center font-bold text-[10px] uppercase tracking-widest text-white/60 flex flex-col items-center gap-1.5">
                             <span>&copy; {new Date().getFullYear()} {negocio.nombre}.</span>
                             {negocio.plan === 'free' && (
-                                <a href="https://whaasy.vercel.app?ref=tienda_free" target="_blank" rel="noopener noreferrer" className="text-[#22c55e] hover:underline transition-all">
+                                <a href="https://whaasy.vercel.app?ref=tienda_free" target="_blank" rel="noopener noreferrer" className="text-green-300 hover:underline transition-all">
                                     Creado gratis con Whaasy
                                 </a>
                             )}
