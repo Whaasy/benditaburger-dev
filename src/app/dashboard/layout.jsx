@@ -314,13 +314,6 @@ export default function DashboardLayout({ children }) {
                     <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">{userAuth?.email}</p>
                   </div>
                   <div className="p-2">
-                    <Link
-                      href="/dashboard/perfil"
-                      onClick={() => setPerfilAbierto(false)}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-neutral-800 transition-colors"
-                    >
-                      <User className="w-4 h-4" /> Datos Personales
-                    </Link>
                     <button
                       onClick={handleCerrarSesion}
                       className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 dark:text-red-500 dark:hover:bg-red-900/20 transition-colors mt-1"
@@ -336,19 +329,6 @@ export default function DashboardLayout({ children }) {
 
         <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-8 custom-scrollbar">
           <div className="mx-auto w-full max-w-7xl pb-20">
-            {configGlobal?.mostrar_alerta && configGlobal?.mensaje_alerta && (
-              <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200 dark:from-orange-900/10 dark:to-orange-900/20 dark:border-orange-800/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-fade-in shadow-sm">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 shrink-0 bg-orange-200/50 dark:bg-orange-800/50 rounded-full flex items-center justify-center">
-                    <Megaphone className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-black text-orange-800 dark:text-orange-300 uppercase tracking-widest mb-0.5">Aviso Importante</h3>
-                    <p className="text-sm font-medium text-orange-700 dark:text-orange-400">{configGlobal.mensaje_alerta}</p>
-                  </div>
-                </div>
-              </div>
-            )}
 
             {/* ALERTA DE GRACIA ACTIVA (TIENDA ON PERO DEBE PAGAR) */}
             {enGraciaActiva && (
