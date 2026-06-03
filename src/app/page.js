@@ -862,7 +862,7 @@ const MOCK_NEGOCIO = {
     red_instagram: "https://instagram.com/benditaburger",
     red_facebook: "https://facebook.com/benditaburger",
     red_tiktok: "https://tiktok.com/@benditaburger",
-    horarios_activo: true,
+    horarios_activo: false,
     horario_apertura: "18:00",
     horario_cierre: "23:59",
     hero_imagen_url: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=1200&auto=format&fit=crop",
@@ -871,7 +871,7 @@ const MOCK_NEGOCIO = {
     hero_opacidad: 60,
     campos_formulario: {
         horarios: {
-            activo: true,
+            activo: false,
             apertura: "18:00",
             cierre: "23:59"
         }
@@ -927,6 +927,14 @@ export default function App() {
         }
         fetchSupabaseData();
     }, []);
+
+    if (loading) {
+        return (
+            <div className="fixed inset-0 bg-[#050505] flex items-center justify-center">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#f5290f] border-t-transparent"></div>
+            </div>
+        );
+    }
 
     return (
         <PlantillaBull 
