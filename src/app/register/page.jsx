@@ -94,36 +94,43 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <div className="mx-auto w-14 h-14 bg-yellow-500/10 border border-yellow-500/20 rounded-2xl flex items-center justify-center mb-4">
-          <Mail className="w-6 h-6 text-yellow-500" />
+    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-red-950/20 via-gray-950 to-black flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 font-sans relative overflow-hidden">
+      
+      {/* Elemento de diseño de fondo luminoso */}
+      <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-red-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center relative z-10">
+        <div className="mx-auto w-16 h-16 bg-gradient-to-tr from-red-600 to-red-500 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-red-600/20 transform hover:scale-105 transition-transform">
+          <Mail className="w-7 h-7 text-white" />
         </div>
-        <h2 className="mt-6 text-3xl font-black tracking-tight text-white uppercase">
-          Crear Cuenta Admin
+        <h2 className="text-3xl md:text-4xl font-black tracking-tight text-white uppercase bg-gradient-to-r from-white via-neutral-200 to-neutral-400 bg-clip-text text-transparent">
+          Registrar Admin
         </h2>
-        <p className="mt-2 text-sm text-gray-400">
-          Registra un nuevo administrador para gestionar el catálogo
+        <p className="mt-2.5 text-xs font-semibold tracking-wider text-red-500/80 uppercase">
+          Bendita Burger
+        </p>
+        <p className="mt-2 text-sm text-neutral-400 max-w-xs mx-auto">
+          Crea una nueva cuenta de administrador para gestionar tu catálogo.
         </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-neutral-900 py-8 px-4 border border-neutral-800 shadow sm:rounded-2xl sm:px-10">
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md relative z-10">
+        <div className="bg-neutral-900/60 backdrop-blur-xl py-8 px-6 border border-neutral-800/80 shadow-2xl rounded-3xl sm:px-10">
           {mensaje.texto && (
-            <div className={`mb-6 p-4 rounded-xl text-sm font-bold flex items-center gap-2 ${mensaje.tipo === "exito" ? "bg-green-950 text-green-400 border border-green-900" : "bg-red-950 text-red-400 border border-red-900"}`}>
-              {mensaje.tipo === "exito" ? <CheckCircle2 className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
+            <div className={`mb-6 p-4 rounded-xl text-xs font-bold flex items-center gap-2.5 animate-fade-in ${mensaje.tipo === "exito" ? "bg-green-950/30 text-green-400 border border-green-900/50" : "bg-red-950/30 text-red-400 border border-red-900/50"}`}>
+              {mensaje.tipo === "exito" ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
               {mensaje.texto}
             </div>
           )}
 
-          <form className="space-y-6" onSubmit={handleRegister}>
-            <div>
-              <label htmlFor="email" className="block text-xs font-black uppercase tracking-wider text-gray-400">
+          <form className="space-y-5" onSubmit={handleRegister}>
+            <div className="space-y-1.5">
+              <label htmlFor="email" className="block text-[10px] font-black uppercase tracking-widest text-neutral-400">
                 Correo Electrónico
               </label>
-              <div className="mt-1 relative rounded-md shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-500" />
+              <div className="relative rounded-xl shadow-sm">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                  <Mail className="h-4.5 w-4.5 text-neutral-500" />
                 </div>
                 <input
                   id="email"
@@ -132,19 +139,19 @@ export default function RegisterPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-3 bg-neutral-950 border border-neutral-800 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all"
+                  className="block w-full pl-11 pr-3 py-3 bg-neutral-950/70 border border-neutral-800 rounded-xl text-sm text-white placeholder-neutral-600 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-transparent transition-all shadow-inner"
                   placeholder="admin@benditaburger.com"
                 />
               </div>
             </div>
 
-            <div>
-              <label htmlFor="password" className="block text-xs font-black uppercase tracking-wider text-gray-400">
+            <div className="space-y-1.5">
+              <label htmlFor="password" className="block text-[10px] font-black uppercase tracking-widest text-neutral-400">
                 Contraseña
               </label>
-              <div className="mt-1 relative rounded-md shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-gray-500" />
+              <div className="relative rounded-xl shadow-sm">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                  <Lock className="h-4.5 w-4.5 text-neutral-500" />
                 </div>
                 <input
                   id="password"
@@ -153,19 +160,19 @@ export default function RegisterPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-3 bg-neutral-950 border border-neutral-800 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all"
+                  className="block w-full pl-11 pr-3 py-3 bg-neutral-950/70 border border-neutral-800 rounded-xl text-sm text-white placeholder-neutral-600 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-transparent transition-all shadow-inner"
                   placeholder="••••••••"
                 />
               </div>
             </div>
 
-            <div>
-              <label htmlFor="confirmPassword" className="block text-xs font-black uppercase tracking-wider text-gray-400">
+            <div className="space-y-1.5">
+              <label htmlFor="confirmPassword" className="block text-[10px] font-black uppercase tracking-widest text-neutral-400">
                 Confirmar Contraseña
               </label>
-              <div className="mt-1 relative rounded-md shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-gray-500" />
+              <div className="relative rounded-xl shadow-sm">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                  <Lock className="h-4.5 w-4.5 text-neutral-500" />
                 </div>
                 <input
                   id="confirmPassword"
@@ -174,17 +181,17 @@ export default function RegisterPage() {
                   required
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-3 bg-neutral-950 border border-neutral-800 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all"
+                  className="block w-full pl-11 pr-3 py-3 bg-neutral-950/70 border border-neutral-800 rounded-xl text-sm text-white placeholder-neutral-600 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-transparent transition-all shadow-inner"
                   placeholder="••••••••"
                 />
               </div>
             </div>
 
-            <div>
+            <div className="pt-2">
               <button
                 type="submit"
                 disabled={cargando}
-                className="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-xl shadow-sm text-xs font-black uppercase tracking-wider text-black bg-yellow-500 hover:bg-yellow-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex justify-center items-center py-3.5 px-4 border border-transparent rounded-xl shadow-lg shadow-red-600/10 text-xs font-black uppercase tracking-widest text-white bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-[0.98]"
               >
                 {cargando ? "Registrando..." : "Crear Cuenta Admin"}
               </button>
@@ -192,9 +199,9 @@ export default function RegisterPage() {
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-sm text-gray-400">
+            <p className="text-xs text-neutral-400 font-medium">
               ¿Ya tienes cuenta?{" "}
-              <Link href="/login" className="font-bold text-yellow-500 hover:text-yellow-400 transition-colors">
+              <Link href="/login" className="font-bold text-red-500 hover:text-red-400 hover:underline transition-all">
                 Inicia sesión aquí
               </Link>
             </p>
