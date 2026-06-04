@@ -183,20 +183,23 @@ export default function DashboardLayout({ children }) {
         </div>
 
         <div className="shrink-0 border-t border-gray-100 p-4 dark:border-neutral-800">
-          <div className="mb-3 rounded-xl border border-gray-100 bg-gray-50 p-3 dark:border-neutral-800 dark:bg-neutral-900/50 relative overflow-hidden">
-            {negocio.is_trial && (
-              <div className="absolute top-0 right-0 bg-amber-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-bl-lg">PRUEBA</div>
-            )}
-            {enGraciaActiva && (
-              <div className="absolute top-0 right-0 bg-red-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-bl-lg">ATRASADO</div>
-            )}
-            <div className="mb-1 flex items-center justify-between mt-1">
-              <p className="text-xs font-medium text-gray-500 dark:text-neutral-400">Plan actual</p>
-              <span className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase ${negocio.estado_pago === 'vencido' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'}`}>
-                {negocio.plan === 'free' ? 'Prueba' : negocio.plan}
-              </span>
+          <div className="flex flex-col gap-3 rounded-xl border border-gray-100 bg-gray-50 p-3 dark:border-neutral-800 dark:bg-neutral-900/50">
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 shrink-0 rounded-lg bg-gradient-to-tr from-red-500 to-red-600 flex items-center justify-center text-white font-bold text-sm">
+                {userAuth?.email ? userAuth.email.charAt(0).toUpperCase() : 'U'}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-xs font-bold text-gray-900 dark:text-white">{negocio?.nombre || "Mi Tienda"}</p>
+                <p className="truncate text-[10px] text-gray-500 dark:text-neutral-400">{userAuth?.email}</p>
+              </div>
             </div>
-            <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">{negocio.nombre}</p>
+            
+            <button
+              onClick={handleCerrarSesion}
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-red-50 hover:bg-red-100 dark:bg-red-950/20 dark:hover:bg-red-900/30 px-3 py-2.5 text-xs font-semibold text-red-600 dark:text-red-400 transition-colors"
+            >
+              <LogOut className="w-4 h-4" /> Cerrar sesión
+            </button>
           </div>
         </div>
       </aside>
@@ -248,153 +251,11 @@ export default function DashboardLayout({ children }) {
             </button>
           </div>
 
-          <div className="flex items-center gap-3 shrink-0">
-            <div className="relative" ref={dropdownNotiRef}>
-              <button
-                onClick={() => setNotificacionesAbiertas(!notificacionesAbiertas)}
-                className="relative flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-neutral-800 dark:hover:text-white border border-transparent dark:hover:border-neutral-700"
-              >
-                <Bell className="h-5 w-5" />
-                {notificaciones.length > 0 && (
-                  <span className="absolute right-2 top-2 h-2 w-2 rounded-full border-2 border-white bg-red-500 dark:border-[#0a0a0a]"></span>
-                )}
-              </button>
-
-              {notificacionesAbiertas && (
-                <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-neutral-900 rounded-xl shadow-2xl border border-gray-100 dark:border-neutral-800 overflow-hidden z-50 animate-fade-in">
-                  <div className="px-4 py-3 border-b border-gray-100 dark:border-neutral-800 flex justify-between items-center">
-                    <h3 className="font-bold text-sm text-gray-900 dark:text-white">Notificaciones</h3>
-                    <span className="text-xs bg-gray-100 dark:bg-neutral-800 text-gray-500 px-2 py-0.5 rounded-full">{notificaciones.length}</span>
-                  </div>
-                  <div className="max-h-[300px] overflow-y-auto">
-                    {notificaciones.length === 0 ? (
-                      <div className="px-4 py-6 text-center text-sm text-gray-500 dark:text-neutral-400">
-                        Todo al día. No hay alertas.
-                      </div>
-                    ) : (
-                      notificaciones.map((noti) => (
-                        <div key={noti.id} className={`px-4 py-3 border-b last:border-0 border-gray-50 dark:border-neutral-800/50 hover:bg-gray-50 dark:hover:bg-neutral-800/50 transition-colors ${(noti.tipo === 'peligro' || noti.tipo === 'alerta') ? 'bg-red-50/50 dark:bg-red-900/10' : ''}`}>
-                          <div className="flex gap-3">
-                            <div className="shrink-0 mt-0.5">
-                              {noti.tipo === 'peligro' || noti.tipo === 'alerta' ? <AlertCircle className="w-5 h-5 text-red-500" /> : <Info className="w-5 h-5 text-blue-500" />}
-                            </div>
-                            <div>
-                              <p className="text-sm font-bold text-gray-900 dark:text-white">{noti.titulo}</p>
-                              <p className="text-xs text-gray-500 dark:text-neutral-400 mt-1 leading-relaxed">{noti.texto}</p>
-                              {noti.accion && (
-                                <Link
-                                  href={noti.link}
-                                  onClick={() => setNotificacionesAbiertas(false)}
-                                  className={`inline-block mt-2 text-xs font-bold ${noti.tipo === 'peligro' || noti.tipo === 'alerta' ? 'text-red-600 hover:text-red-700 dark:text-red-500' : 'text-green-600 hover:text-green-700 dark:text-green-500'}`}
-                                >
-                                  {noti.accion} &rarr;
-                                </Link>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="relative" ref={dropdownPerfilRef}>
-              <div
-                onClick={() => setPerfilAbierto(!perfilAbierto)}
-                className="h-9 w-9 cursor-pointer rounded-lg border border-gray-200 bg-gradient-to-tr from-green-500 to-emerald-600 shadow-sm dark:border-neutral-700 ml-1 flex items-center justify-center text-white font-bold text-sm hover:opacity-90 transition-opacity"
-              >
-                {userAuth?.email ? userAuth.email.charAt(0).toUpperCase() : 'U'}
-              </div>
-
-              {perfilAbierto && (
-                <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-neutral-900 rounded-xl shadow-2xl border border-gray-100 dark:border-neutral-800 overflow-hidden z-50 animate-fade-in">
-                  <div className="px-4 py-3 border-b border-gray-100 dark:border-neutral-800">
-                    <p className="text-sm font-bold text-gray-900 dark:text-white">Mi Cuenta</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">{userAuth?.email}</p>
-                  </div>
-                  <div className="p-2">
-                    <button
-                      onClick={handleCerrarSesion}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 dark:text-red-500 dark:hover:bg-red-900/20 transition-colors mt-1"
-                    >
-                      <LogOut className="w-4 h-4" /> Cerrar sesión
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+          <div className="flex items-center gap-3 shrink-0"></div>
         </header>
 
         <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-8 custom-scrollbar">
           <div className="mx-auto w-full max-w-7xl pb-20">
-
-            {/* ALERTA DE GRACIA ACTIVA (TIENDA ON PERO DEBE PAGAR) */}
-            {enGraciaActiva && (
-              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 dark:bg-red-900/20 dark:border-red-800/50 shadow-sm animate-fade-in">
-                <div className="flex items-center gap-3">
-                  <AlertCircle className="w-8 h-8 text-red-600 dark:text-red-400 shrink-0" />
-                  <div>
-                    <h3 className="text-sm font-bold text-red-800 dark:text-red-300">
-                      Pago atrasado.
-                    </h3>
-                    <p className="text-xs text-red-600 dark:text-red-400 mt-0.5 font-medium">Tu tienda sigue activa, pero se desactivará en {Math.ceil((suspensionGlobal.getTime() - ahoraGlobal.getTime()) / (1000 * 60 * 60 * 24))} día(s) si no abonás la mensualidad.</p>
-                  </div>
-                </div>
-                <Link
-                  href={`/checkout?plan=${negocio.plan}`}
-                  className="shrink-0 w-full sm:w-auto text-center bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-6 rounded-lg text-sm transition-colors shadow-sm"
-                >
-                  Pagar ahora
-                </Link>
-              </div>
-            )}
-
-            {/* ALERTA DE SUSPENSIÓN (TIENDA APAGADA) */}
-            {negocio?.estado_pago === "vencido" && (
-              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 dark:bg-red-900/20 dark:border-red-800/50 shadow-sm animate-fade-in">
-                <div className="flex items-center gap-3">
-                  <AlertCircle className="w-8 h-8 text-red-600 dark:text-red-400 shrink-0" />
-                  <div>
-                    <h3 className="text-sm font-bold text-red-800 dark:text-red-300">
-                      Tienda Desactivada.
-                    </h3>
-                    <p className="text-xs text-red-600 dark:text-red-400 mt-0.5 font-medium">Tus clientes ya no pueden pedir. Tu tienda será eliminada definitivamente pronto.</p>
-                  </div>
-                </div>
-                <Link
-                  href={`/checkout?plan=${negocio.plan === 'free' ? 'basic' : negocio.plan}`}
-                  className="shrink-0 w-full sm:w-auto text-center bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-6 rounded-lg text-sm transition-colors shadow-sm"
-                >
-                  Reactivar Tienda
-                </Link>
-              </div>
-            )}
-
-            {/* ALERTA DE PRUEBA ACTIVA (AMARILLA) */}
-            {(negocio?.is_trial || negocio?.plan === 'prueba') && negocio?.estado_pago !== "vencido" && (
-              <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 dark:bg-amber-900/20 dark:border-amber-800/50 shadow-sm animate-fade-in">
-                <div className="flex items-center gap-3">
-                  <Clock className="w-6 h-6 text-amber-600 dark:text-amber-400 shrink-0" />
-                  <div>
-                    <h3 className="text-sm font-bold text-amber-800 dark:text-amber-300">Estás en tu Período de Prueba Gratis</h3>
-                    <p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">
-                      {negocio.trial_ends_at
-                        ? `Te quedan ${Math.max(0, Math.ceil((new Date(negocio.trial_ends_at).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))} día(s) gratis de Plan PRO. Elegí un plan para no perder tus datos.`
-                        : "Aprovechá todas las herramientas del Plan PRO."}
-                    </p>
-                  </div>
-                </div>
-                <Link
-                  href={`/planes`}
-                  className="shrink-0 w-full sm:w-auto text-center bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-6 rounded-lg text-sm transition-colors shadow-sm"
-                >
-                  Elegir Plan
-                </Link>
-              </div>
-            )}
 
             {children}
           </div>
