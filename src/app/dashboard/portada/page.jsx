@@ -366,7 +366,7 @@ export default function PortadaConfigPage() {
                   value={logoUrl}
                   onChange={(e) => setLogoUrl(e.target.value)}
                   className="w-full bg-white dark:bg-[#1A1A1E] text-gray-900 dark:text-white border border-gray-300 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
-                  placeholder="Ej: https://images.unsplash.com/logo..."
+                  placeholder=""
                 />
 
                 <div className="space-y-1.5 pt-2">
@@ -402,7 +402,7 @@ export default function PortadaConfigPage() {
                 value={heroTitulo}
                 onChange={(e) => setHeroTitulo(e.target.value)}
                 className="w-full bg-white dark:bg-[#1A1A1E] text-gray-900 dark:text-white border border-gray-300 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
-                placeholder="Ej: Bendita Burger"
+                placeholder=""
               />
             </div>
 
@@ -415,7 +415,7 @@ export default function PortadaConfigPage() {
                 onChange={(e) => setHeroSubtitulo(e.target.value)}
                 rows={2}
                 className="w-full bg-white dark:bg-[#1A1A1E] text-gray-900 dark:text-white border border-gray-300 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 resize-none"
-                placeholder="Ej: Las mejores hamburguesas artesanales..."
+                placeholder=""
               />
             </div>
 
@@ -455,7 +455,7 @@ export default function PortadaConfigPage() {
                 value={heroImagenUrl}
                 onChange={(e) => setHeroImagenUrl(e.target.value)}
                 className="w-full bg-white dark:bg-[#1A1A1E] text-gray-900 dark:text-white border border-gray-300 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
-                placeholder="Ej: https://images.unsplash.com/photo-..."
+                placeholder=""
               />
             </div>
 
@@ -530,7 +530,7 @@ export default function PortadaConfigPage() {
                   <img src={logoUrl} alt="Logo Preview" style={{ height: `${logoSize}px` }} className="w-auto object-contain mb-3 drop-shadow-md transition-transform hover:scale-105" />
                 )}
                 <h2 className="text-lg md:text-xl font-black text-white uppercase tracking-tight leading-tight drop-shadow-md mb-1.5">
-                  {heroTitulo || negocio?.nombre || "Bendita Burger"}
+                  {heroTitulo}
                 </h2>
                 {heroSubtitulo ? (
                   <p className="text-white/90 text-[10px] md:text-xs font-medium max-w-xs mx-auto drop-shadow-sm leading-relaxed mb-3">
@@ -646,8 +646,14 @@ export default function PortadaConfigPage() {
               <div className="bg-[#f5290f] py-4 px-4 flex flex-col gap-3 border-t border-white/10 text-white text-[8px] font-bold uppercase tracking-wider">
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-1">
-                    <div className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,0.8)]"></div>
-                    <span className="font-black tracking-tight">{negocio?.nombre || "Bendita Burger"}</span>
+                    {logoUrl ? (
+                      <img src={logoUrl} alt="Logo Preview" style={{ height: '18px' }} className="w-auto object-contain drop-shadow-md" />
+                    ) : (
+                      <>
+                        <div className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,0.8)]"></div>
+                        <span className="font-black tracking-tight">{negocio?.nombre || "Bendita Burger"}</span>
+                      </>
+                    )}
                   </div>
 
                   <div className="flex flex-col items-center gap-1">

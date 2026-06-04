@@ -496,7 +496,7 @@ function PlantillaBull({ negocio, categorias, productos }) {
                             {navbarType === 'logo' && logoUrl && (
                                 <img src={logoUrl} alt="Logo" style={{ height: `${logoSize}px` }} className="w-auto object-contain mb-3 drop-shadow-md transition-transform hover:scale-105" />
                             )}
-                            <h1 className="text-xl md:text-3xl font-black text-white tracking-tight drop-shadow-md mb-1.5 uppercase">{negocio.hero_titulo || negocio.nombre}</h1>
+                            <h1 className="text-xl md:text-3xl font-black text-white tracking-tight drop-shadow-md mb-1.5 uppercase">{negocio.hero_titulo || ""}</h1>
                             {negocio.hero_subtitulo && <p className="text-white/90 text-xs md:text-sm font-medium mb-3 drop-shadow-sm max-w-lg">{negocio.hero_subtitulo}</p>}
 
                             <div className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border text-[9px] font-black uppercase tracking-widest backdrop-blur-md ${isClosed ? 'bg-red-500/20 border-red-500/50 text-red-400' : 'bg-green-500/20 border-green-500/50 text-green-400'}`}>
@@ -520,7 +520,7 @@ function PlantillaBull({ negocio, categorias, productos }) {
                                 )}
 
                                 {/* CARRITO MOBILE */}
-                                <button onClick={() => setIsCartOpen(true)} className="md:hidden relative flex items-center justify-center w-8 h-8 rounded-lg bg-[var(--bg-card)] border border-[var(--border)] text-[var(--text-main)] hover:border-[var(--brand)] transition-colors shrink-0">
+                                <button onClick={() => setIsCartOpen(true)} className="md:hidden relative flex items-center justify-center w-8 h-8 rounded-lg bg-[var(--bg-card)] border border-[var(--border)] text-[var(--text-main)] hover:border-[var(--brand)] transition-colors shrink-0 ml-auto">
                                     <ShoppingCart className="w-4 h-4" />
                                     {cantidadItems > 0 && (
                                         <span className="absolute -top-1 -right-1 bg-[var(--brand)] text-[var(--brand-text)] text-[9px] font-black w-4 h-4 flex items-center justify-center rounded-full border-2 border-[var(--bg-main)]">
@@ -649,8 +649,14 @@ function PlantillaBull({ negocio, categorias, productos }) {
                         <div className="max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div className="flex flex-col items-center md:items-start gap-3">
                                 <div className="flex items-center gap-2 mb-1">
-                                    <div className="w-2 h-2 rounded-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)]"></div>
-                                    <h4 className="font-black text-xl uppercase tracking-tight leading-none text-white">{negocio.nombre}</h4>
+                                    {logoUrl ? (
+                                        <img src={logoUrl} alt="Logo" style={{ height: '50px' }} className="w-auto object-contain drop-shadow-md" />
+                                    ) : (
+                                        <>
+                                            <div className="w-2 h-2 rounded-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)]"></div>
+                                            <h4 className="font-black text-xl uppercase tracking-tight leading-none text-white">{negocio.nombre}</h4>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                             <div className="flex flex-col items-center md:items-center gap-1.5">
