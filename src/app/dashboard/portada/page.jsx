@@ -570,7 +570,7 @@ export default function PortadaConfigPage() {
                 step={0.1}
                 aria-label="Zoom"
                 onChange={(e) => setZoom(parseFloat(e.target.value))}
-                className="flex-1 accent-red-600"
+                className="w-full flex-1 accent-red-600 cursor-pointer"
               />
             </div>
             <div className="flex justify-center">
