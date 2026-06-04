@@ -686,35 +686,54 @@ function PlantillaBull({ negocio, categorias, productos }) {
                     )}
 
                     {/* PIE DE PÁGINA */}
-                    <footer className="mt-auto pt-10 pb-6 px-6 border-t border-white/10 text-white" style={{ backgroundColor: '#f5290f' }}>
-                        <div className="max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <footer className="mt-auto pt-10 pb-6 px-6 border-t border-white/10 text-white text-center md:text-left" style={{ backgroundColor: '#f5290f' }}>
+                        <div className="max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
+                            {/* Columna 1: Marca y Ubicación */}
                             <div className="flex flex-col items-center md:items-start gap-3">
                                 <div className="flex items-center gap-2 mb-1">
                                     {logoUrl ? (
-                                        <img src={logoUrl} alt="Logo" style={{ height: '50px' }} className="w-auto object-contain drop-shadow-md" />
+                                        <img src={logoUrl} alt="Logo" style={{ height: '55px' }} className="w-auto object-contain drop-shadow-md" />
                                     ) : (
                                         <>
-                                            <div className="w-2 h-2 rounded-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)]"></div>
+                                            <div className="w-2.5 h-2.5 rounded-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)]"></div>
                                             <h4 className="font-black text-xl uppercase tracking-tight leading-none text-white">{negocio.nombre}</h4>
                                         </>
                                     )}
                                 </div>
+                                <div className="text-xs font-semibold text-white/80 space-y-1">
+                                    <p className="font-black text-[9px] uppercase tracking-wider text-white/50">Ubicación</p>
+                                    <p>Goya, Corrientes</p>
+                                </div>
                             </div>
-                            <div className="flex flex-col items-center md:items-center gap-1.5">
-                                <h5 className="font-black uppercase text-[9px] tracking-widest mb-1.5 text-white/80">Contacto</h5>
-                                <a href={`https://wa.me/${negocio.whatsapp}`} target="_blank" rel="noreferrer" className="text-xs font-black flex items-center gap-2 hover:text-white/90 transition-colors bg-white/10 px-3 py-1.5 rounded-lg border border-white/10 text-white">
-                                    <WhatsAppIcon className="w-3.5 h-3.5 text-green-400" /> WhatsApp
+
+                            {/* Columna 2: Días y Horarios */}
+                            <div className="flex flex-col items-center md:items-start gap-1.5">
+                                <h5 className="font-black uppercase text-[9px] tracking-widest mb-1 text-white/50">Días y Horarios</h5>
+                                <div className="text-xs font-semibold text-white/90">
+                                    <p>Martes a Domingo</p>
+                                    <p className="font-black mt-0.5 text-white">20:00 hs a 00:30 hs</p>
+                                </div>
+                            </div>
+
+                            {/* Columna 3: Contacto */}
+                            <div className="flex flex-col items-center md:items-start gap-1.5">
+                                <h5 className="font-black uppercase text-[9px] tracking-widest mb-1 text-white/50">Contacto</h5>
+                                <a href={`https://wa.me/${negocio.whatsapp}`} target="_blank" rel="noreferrer" className="text-xs font-black flex items-center gap-2 hover:bg-white/20 transition-colors bg-white/10 px-4 py-2 rounded-xl border border-white/10 text-white">
+                                    <WhatsAppIcon className="w-4 h-4 text-green-400" /> WhatsApp
                                 </a>
                             </div>
+
+                            {/* Columna 4: Redes Sociales */}
                             <div className="flex flex-col items-center md:items-end gap-1.5">
-                                <h5 className="font-black uppercase text-[9px] tracking-widest mb-1.5 text-white/80">Redes Sociales</h5>
-                                <div className="flex gap-1.5">
-                                    {negocio.red_instagram && <a href={negocio.red_instagram} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-lg bg-white/10 border border-white/10 text-white hover:bg-white/20 transition-colors flex items-center justify-center"><InstagramIcon className="w-4 h-4" /></a>}
-                                    {negocio.red_facebook && <a href={negocio.red_facebook} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-lg bg-white/10 border border-white/10 text-white hover:bg-white/20 transition-colors flex items-center justify-center"><FacebookIcon className="w-4 h-4" /></a>}
-                                    {tiktokUrl && <a href={tiktokUrl} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-lg bg-white/10 border border-white/10 text-white hover:bg-white/20 transition-colors flex items-center justify-center"><TikTokIcon className="w-3.5 h-3.5" /></a>}
+                                <h5 className="font-black uppercase text-[9px] tracking-widest mb-1.5 text-white/50">Redes Sociales</h5>
+                                <div className="flex gap-2">
+                                    {negocio.red_instagram && <a href={negocio.red_instagram} target="_blank" rel="noreferrer" className="w-9 h-9 rounded-xl bg-white/10 border border-white/10 text-white hover:bg-white/20 transition-colors flex items-center justify-center"><InstagramIcon className="w-4.5 h-4.5" /></a>}
+                                    {negocio.red_facebook && <a href={negocio.red_facebook} target="_blank" rel="noreferrer" className="w-9 h-9 rounded-xl bg-white/10 border border-white/10 text-white hover:bg-white/20 transition-colors flex items-center justify-center"><FacebookIcon className="w-4.5 h-4.5" /></a>}
+                                    {tiktokUrl && <a href={tiktokUrl} target="_blank" rel="noreferrer" className="w-9 h-9 rounded-xl bg-white/10 border border-white/10 text-white hover:bg-white/20 transition-colors flex items-center justify-center"><TikTokIcon className="w-4 h-4" /></a>}
                                 </div>
                             </div>
                         </div>
+
                         <div className="max-w-[1400px] mx-auto mt-8 pt-4 border-t border-white/10 text-center font-bold text-[10px] uppercase tracking-widest text-white/60 flex flex-col items-center gap-1.5">
                             <span>&copy; {new Date().getFullYear()} {negocio.nombre}.</span>
                             {negocio.plan === 'free' && (
