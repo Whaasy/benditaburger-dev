@@ -42,6 +42,7 @@ export default function PortadaConfigPage() {
   // Navbar branding state fields
   const [navbarType, setNavbarType] = useState("texto"); // "texto" | "logo"
   const [logoUrl, setLogoUrl] = useState("");
+  const [logoSize, setLogoSize] = useState(70);
 
   // File Upload & Cropper state
   const [imageSrc, setImageSrc] = useState(null);
@@ -82,13 +83,16 @@ export default function PortadaConfigPage() {
               const configObj = JSON.parse(data.tema_tienda);
               setNavbarType(configObj.navbar_type || "texto");
               setLogoUrl(configObj.logo_url || "");
+              setLogoSize(configObj.logo_size || 70);
             } else {
               setNavbarType("texto");
               setLogoUrl("");
+              setLogoSize(70);
             }
           } catch (e) {
             setNavbarType("texto");
             setLogoUrl("");
+            setLogoSize(70);
           }
         }
       } catch (error) {
@@ -184,7 +188,8 @@ export default function PortadaConfigPage() {
       const newTemaTiendaConfig = JSON.stringify({
         theme: currentTheme,
         navbar_type: navbarType,
-        logo_url: logoUrl
+        logo_url: logoUrl,
+        logo_size: parseInt(logoSize, 10)
       });
 
       const { error } = await supabase
@@ -319,6 +324,21 @@ export default function PortadaConfigPage() {
                   className="w-full bg-white dark:bg-[#1A1A1E] text-gray-900 dark:text-white border border-gray-300 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                   placeholder="Ej: https://images.unsplash.com/logo..."
                 />
+
+                <div className="space-y-1.5 pt-2">
+                  <div className="flex justify-between text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    <span>Tamaño del Logo (Altura)</span>
+                    <span className="font-bold text-red-600">{logoSize}px</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="30"
+                    max="120"
+                    value={logoSize}
+                    onChange={(e) => setLogoSize(parseInt(e.target.value, 10))}
+                    className="w-full accent-red-600 cursor-pointer"
+                  />
+                </div>
               </div>
             )}
           </section>
@@ -476,7 +496,7 @@ export default function PortadaConfigPage() {
 
               <div className="relative z-10 space-y-2">
                 {navbarType === "logo" && logoUrl && (
-                  <img src={logoUrl} alt="Logo Preview" className="h-10 w-auto object-contain mx-auto mb-2 drop-shadow-sm" />
+                  <img src={logoUrl} alt="Logo Preview" style={{ height: `${logoSize}px` }} className="w-auto object-contain mx-auto mb-2 drop-shadow-sm transition-transform hover:scale-105" />
                 )}
                 <h2 className="text-lg md:text-xl font-black text-white uppercase tracking-tight leading-tight drop-shadow-md">
                   {heroTitulo || negocio?.nombre || "Bendita Burger"}
