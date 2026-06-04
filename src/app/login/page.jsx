@@ -63,7 +63,6 @@ export default function LoginPage() {
   };
 
   return (
-  return (
     <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-red-950/20 via-gray-950 to-black flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 font-sans relative overflow-hidden">
       
       {/* Elemento de diseño de fondo luminoso */}
