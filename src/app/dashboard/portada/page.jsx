@@ -505,25 +505,7 @@ export default function PortadaConfigPage() {
 
           <div style={themeStyles} className="sticky top-24 rounded-2xl overflow-hidden shadow-xl border border-[var(--border)] bg-[var(--bg-main)] text-[var(--text-main)] transition-colors duration-300">
             
-            {/* Simulación Navbar */}
-            <div className="bg-[var(--bg-main)]/90 backdrop-blur-xl px-4 py-2.5 flex items-center justify-between border-b border-[var(--border)]">
-              <div></div> {/* Espacio izquierdo para centrar el buscador */}
-              
-              {/* Buscador centrado */}
-              <div className="flex-1 max-w-[150px] mx-auto relative">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-2.5 h-2.5 text-[var(--text-muted)]" />
-                <div className="w-full bg-[var(--bg-card)] border border-[var(--border)] text-[var(--text-muted)] text-[8px] font-medium rounded-md pl-7 pr-2 py-1 select-none">
-                  Buscar producto...
-                </div>
-              </div>
-
-              {/* Botón Carrito en la derecha */}
-              <div className="relative flex items-center justify-center w-6 h-6 rounded-md bg-[var(--bg-card)] border border-[var(--border)] text-[var(--text-main)]">
-                <ShoppingCart className="w-3 h-3" />
-              </div>
-            </div>
-
-            {/* Simulación Hero Banner */}
+            {/* Simulación Hero Banner (Arriba en la página real) */}
             <div className="relative w-full min-h-[180px] py-8 bg-[var(--bg-card)] border-b border-[var(--border)] overflow-hidden shrink-0 flex flex-col items-center justify-center text-center p-4">
               {heroImagenUrl ? (
                 <img
@@ -565,97 +547,128 @@ export default function PortadaConfigPage() {
                 </div>
               </div>
             </div>
-            
-            {/* Simulación del Catálogo / Productos con Layout de Dos Columnas (Sidebar + Grilla) */}
-            <div className="p-4 bg-[var(--bg-main)] flex gap-4 min-h-[220px]">
-              
-              {/* Sidebar de Categorías */}
-              <aside className="w-24 shrink-0 flex flex-col gap-1.5 text-[8px] text-left select-none">
-                <h3 className="text-[6px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-1 px-1">Menú Principal</h3>
-                
-                <div className="flex items-center gap-1 px-2 py-1 bg-[var(--brand)] text-[var(--brand-text)] rounded-md font-bold transition-all shadow-sm">
-                  <Store className="w-2.5 h-2.5 shrink-0" />
-                  <span>Todos</span>
-                </div>
-                
-                <div className="flex items-center gap-1.5 px-2 py-0.5 text-[var(--text-muted)] font-bold">
-                  <div className="w-1 h-1 rounded-full bg-[var(--brand)]"></div>
-                  <span>Hamburguesas</span>
-                </div>
-                
-                <div className="flex items-center gap-1.5 px-2 py-0.5 text-[var(--text-muted)] font-bold">
-                  <div className="w-1 h-1 rounded-full bg-[var(--brand)]"></div>
-                  <span>Burgers</span>
-                </div>
-              </aside>
 
-              {/* Grilla de Productos */}
-              <main className="flex-1">
-                <div className="grid grid-cols-2 gap-3 text-left">
-                  
-                  {/* Producto 1 (Sin imagen) */}
-                  <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-2.5 flex flex-col justify-between h-full shadow-sm hover:shadow-md transition-all">
-                    <div className="relative w-full aspect-square bg-[var(--bg-hover)] overflow-hidden rounded-xl border-b border-[var(--border)] shrink-0 flex items-center justify-center mb-2">
-                      <Store className="w-5 h-5 text-[var(--text-muted)] opacity-20" />
-                    </div>
-                    <div className="text-[8px] font-black uppercase text-[var(--text-main)] truncate leading-tight mb-0.5">Clasica</div>
-                    <div className="text-[6px] text-[var(--text-muted)] truncate leading-tight mb-2.5">Sin descripción</div>
-                    
-                    <button type="button" className="w-full py-1 px-1.5 rounded-lg bg-[var(--brand-soft)] text-[var(--brand)] text-[7px] font-black uppercase flex justify-between items-center border border-[var(--brand-soft)]">
-                      <span>Agregar</span>
-                      <span>$1</span>
-                    </button>
+            {/* Simulación Navbar (Debajo de la portada, claro y visible) */}
+            <div className="bg-[var(--bg-main)]/90 backdrop-blur-xl px-4 py-2.5 flex items-center justify-between border-b border-[var(--border)]">
+              {/* Lado Izquierdo (Texto del Nombre si aplica, visible claramente) */}
+              <div className="w-1/3 flex justify-start">
+                {navbarType !== "logo" && (
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2 h-2 rounded-full bg-[var(--brand)] shadow-[0_0_8px_var(--brand)] shrink-0"></div>
+                    <span className="font-black text-[9px] uppercase tracking-tighter text-[var(--text-main)] truncate max-w-[90px]">
+                      {negocio?.nombre || "Bendita Burger"}
+                    </span>
                   </div>
+                )}
+              </div>
 
-                  {/* Producto 2 (Con silueta/imagen) */}
-                  <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-2.5 flex flex-col justify-between h-full shadow-sm hover:shadow-md transition-all">
-                    <div className="relative w-full aspect-square bg-[var(--bg-hover)] overflow-hidden rounded-xl border-b border-[var(--border)] shrink-0 flex items-center justify-center mb-2">
-                      <svg className="w-8 h-8 text-[var(--text-muted)] opacity-25" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z" />
-                      </svg>
-                    </div>
-                    <div className="text-[8px] font-black uppercase text-[var(--text-main)] truncate leading-tight mb-0.5">Clasica</div>
-                    <div className="text-[6px] text-[var(--text-muted)] truncate leading-tight mb-2.5">Cebolla, Tomate</div>
-                    
-                    <button type="button" className="w-full py-1 px-1.5 rounded-lg bg-[var(--brand-soft)] text-[var(--brand)] text-[7px] font-black uppercase flex justify-between items-center border border-[var(--brand-soft)]">
-                      <span>Agregar</span>
-                      <span>$1</span>
-                    </button>
+              {/* Centro: Buscador */}
+              <div className="w-1/3 flex justify-center">
+                <div className="relative w-full max-w-[100px]">
+                  <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-2 h-2 text-[var(--text-muted)]" />
+                  <div className="w-full bg-[var(--bg-card)] border border-[var(--border)] text-[var(--text-muted)] text-[6px] font-medium rounded pl-5 pr-1 py-0.5 select-none">
+                    Buscar...
                   </div>
-
                 </div>
-              </main>
+              </div>
 
+              {/* Lado Derecho: Botón Carrito */}
+              <div className="w-1/3 flex justify-end">
+                <div className="relative flex items-center justify-center w-5 h-5 rounded bg-[var(--bg-card)] border border-[var(--border)] text-[var(--text-main)]">
+                  <ShoppingCart className="w-2.5 h-2.5" />
+                </div>
+              </div>
             </div>
 
-            {/* Simulación de Footer Rojo */}
-            <div className="bg-[#f5290f] py-4 px-4 flex flex-col gap-3 border-t border-white/10 text-white text-[8px] font-bold uppercase tracking-wider">
-              <div className="flex justify-between items-center">
-                {/* Nombre de la marca */}
-                <div className="flex items-center gap-1">
-                  <div className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,0.8)]"></div>
-                  <span className="font-black tracking-tight">{negocio?.nombre || "Bendita Burger"}</span>
-                </div>
+            {/* Simulación del Catálogo / Productos y Footer (DIFUMINADOS / SILUETAS porque no se editan aquí) */}
+            <div className="blur-[1.5px] opacity-40 select-none pointer-events-none transition-all">
+              
+              <div className="p-4 bg-[var(--bg-main)] flex gap-4 min-h-[220px]">
+                {/* Sidebar de Categorías (Silueta) */}
+                <aside className="w-24 shrink-0 flex flex-col gap-1.5 text-[8px] text-left select-none">
+                  <h3 className="text-[6px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-1 px-1">Menú Principal</h3>
+                  
+                  <div className="flex items-center gap-1 px-2 py-1 bg-[var(--brand)] text-[var(--brand-text)] rounded-md font-bold transition-all shadow-sm">
+                    <Store className="w-2.5 h-2.5 shrink-0" />
+                    <span>Todos</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-1.5 px-2 py-0.5 text-[var(--text-muted)] font-bold">
+                    <div className="w-1 h-1 rounded-full bg-[var(--brand)]"></div>
+                    <span>Hamburguesas</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-1.5 px-2 py-0.5 text-[var(--text-muted)] font-bold">
+                    <div className="w-1 h-1 rounded-full bg-[var(--brand)]"></div>
+                    <span>Burgers</span>
+                  </div>
+                </aside>
 
-                {/* Contacto WhatsApp */}
-                <div className="flex flex-col items-center gap-1 select-none">
-                  <span className="text-[6px] text-white/70">Contacto</span>
-                  <div className="bg-white/10 px-2 py-0.5 rounded-md border border-white/10 flex items-center gap-1 text-[6px] text-white">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-400"></span>
-                    <span>WhatsApp</span>
+                {/* Grilla de Productos (Silueta) */}
+                <main className="flex-1">
+                  <div className="grid grid-cols-2 gap-3 text-left">
+                    
+                    {/* Producto 1 */}
+                    <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-2.5 flex flex-col justify-between h-full shadow-sm">
+                      <div className="relative w-full aspect-square bg-[var(--bg-hover)] overflow-hidden rounded-xl border-b border-[var(--border)] shrink-0 flex items-center justify-center mb-2">
+                        <Store className="w-5 h-5 text-[var(--text-muted)] opacity-20" />
+                      </div>
+                      <div className="text-[8px] font-black uppercase text-[var(--text-main)] truncate leading-tight mb-0.5">Clasica</div>
+                      <div className="text-[6px] text-[var(--text-muted)] truncate leading-tight mb-2.5">Sin descripción</div>
+                      
+                      <button type="button" className="w-full py-1 px-1.5 rounded-lg bg-[var(--brand-soft)] text-[var(--brand)] text-[7px] font-black uppercase flex justify-between items-center border border-[var(--brand-soft)]">
+                        <span>Agregar</span>
+                        <span>$1</span>
+                      </button>
+                    </div>
+
+                    {/* Producto 2 */}
+                    <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-2.5 flex flex-col justify-between h-full shadow-sm">
+                      <div className="relative w-full aspect-square bg-[var(--bg-hover)] overflow-hidden rounded-xl border-b border-[var(--border)] shrink-0 flex items-center justify-center mb-2">
+                        <svg className="w-8 h-8 text-[var(--text-muted)] opacity-25" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z" />
+                        </svg>
+                      </div>
+                      <div className="text-[8px] font-black uppercase text-[var(--text-main)] truncate leading-tight mb-0.5">Clasica</div>
+                      <div className="text-[6px] text-[var(--text-muted)] truncate leading-tight mb-2.5">Cebolla, Tomate</div>
+                      
+                      <button type="button" className="w-full py-1 px-1.5 rounded-lg bg-[var(--brand-soft)] text-[var(--brand)] text-[7px] font-black uppercase flex justify-between items-center border border-[var(--brand-soft)]">
+                        <span>Agregar</span>
+                        <span>$1</span>
+                      </button>
+                    </div>
+
+                  </div>
+                </main>
+              </div>
+
+              {/* Simulación de Footer Rojo (Silueta) */}
+              <div className="bg-[#f5290f] py-4 px-4 flex flex-col gap-3 border-t border-white/10 text-white text-[8px] font-bold uppercase tracking-wider">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-1">
+                    <div className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,0.8)]"></div>
+                    <span className="font-black tracking-tight">{negocio?.nombre || "Bendita Burger"}</span>
+                  </div>
+
+                  <div className="flex flex-col items-center gap-1">
+                    <span className="text-[6px] text-white/70">Contacto</span>
+                    <div className="bg-white/10 px-2 py-0.5 rounded-md border border-white/10 flex items-center gap-1 text-[6px] text-white">
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-400"></span>
+                      <span>WhatsApp</span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col items-end gap-1">
+                    <span className="text-[6px] text-white/70 font-bold uppercase">Redes Sociales</span>
+                    <div className="w-3 h-3 bg-white/10 rounded flex items-center justify-center text-[5px] border border-white/10">📸</div>
                   </div>
                 </div>
 
-                {/* Redes Sociales */}
-                <div className="flex flex-col items-end gap-1">
-                  <span className="text-[6px] text-white/70 font-bold uppercase">Redes Sociales</span>
-                  <div className="w-3 h-3 bg-white/10 rounded flex items-center justify-center text-[5px] border border-white/10">📸</div>
+                <div className="text-center text-white/50 text-[6px] font-medium pt-2 border-t border-white/10">
+                  &copy; {new Date().getFullYear()} {negocio?.nombre || "Bendita Burger"}.
                 </div>
               </div>
 
-              <div className="text-center text-white/50 text-[6px] font-medium pt-2 border-t border-white/10">
-                &copy; {new Date().getFullYear()} {negocio?.nombre || "Bendita Burger"}.
-              </div>
             </div>
 
           </div>
