@@ -5,7 +5,21 @@ import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import Cropper from "react-easy-crop";
 import getCroppedImg from "@/lib/cropImage";
-import { Check, CheckCircle2, AlertCircle, Image as ImageIcon, Upload, Eye, Type } from "lucide-react";
+import { Check, CheckCircle2, AlertCircle, Image as ImageIcon, Upload, Eye, Type, ShoppingCart, Store } from "lucide-react";
+
+// Función experta para calcular el contraste dinámico (Blanco o Negro)
+function getContrastColor(hexColor) {
+  if (!hexColor) return '#000000';
+  let hex = hexColor.replace('#', '');
+  if (hex.length === 3) hex = hex.split('').map(char => char + char).join('');
+
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+
+  const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+  return (yiq >= 128) ? '#000000' : '#FFFFFF';
+}
 
 // Converts uploaded image to lightweight WEBP format
 const convertirAWebp = (fileOrBlob, filename = "image.webp") => {
@@ -242,6 +256,36 @@ export default function PortadaConfigPage() {
     </div>
   );
 
+  // Parse theme and brand color configuration from negocio
+  let isDark = false;
+  try {
+    if (negocio?.tema_tienda && negocio.tema_tienda.startsWith('{')) {
+      const configObj = JSON.parse(negocio.tema_tienda);
+      isDark = configObj.theme === 'dark';
+    } else {
+      isDark = negocio?.tema_tienda === 'dark';
+    }
+  } catch (e) {
+    isDark = negocio?.tema_tienda === 'dark';
+  }
+
+  const brandColor = negocio?.color_principal || '#EAB308';
+  const brandTextColor = getContrastColor(brandColor);
+
+  const themeStyles = {
+    '--brand': brandColor,
+    '--brand-text': brandTextColor,
+    '--brand-soft': `${brandColor}15`,
+    '--brand-medium': `${brandColor}40`,
+    '--bg-main': isDark ? '#050505' : '#F8F9FA',
+    '--bg-card': isDark ? '#111111' : '#FFFFFF',
+    '--bg-hover': isDark ? '#1A1A1A' : '#F1F5F9',
+    '--text-main': isDark ? '#FFFFFF' : '#09090B',
+    '--text-muted': isDark ? '#A1A1AA' : '#71717A',
+    '--border': isDark ? '#27272A' : '#E4E4E7',
+    '--shadow': isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.05)',
+  };
+
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-10 font-sans">
       <div>
@@ -459,27 +503,27 @@ export default function PortadaConfigPage() {
             <Eye className="w-4 h-4" /> Vista Previa en Vivo
           </h3>
 
-          <div className="sticky top-24 rounded-2xl overflow-hidden shadow-xl border border-gray-200 dark:border-neutral-800 bg-[#1A1A1E]">
+          <div style={themeStyles} className="sticky top-24 rounded-2xl overflow-hidden shadow-xl border border-[var(--border)] bg-[var(--bg-main)] text-[var(--text-main)] transition-colors duration-300">
             
             {/* Simulación Navbar */}
-            <div className="bg-white px-4 py-3 flex items-center justify-between border-b border-gray-200">
+            <div className="bg-[var(--bg-main)]/90 backdrop-blur-xl px-4 py-3 flex items-center justify-between border-b border-[var(--border)]">
               {navbarType !== "logo" ? (
                 <div className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 rounded-full bg-red-600 shrink-0"></div>
-                  <span className="font-black text-sm uppercase tracking-tighter text-black truncate max-w-[120px]">
+                  <div className="w-2 h-2 rounded-full bg-[var(--brand)] shadow-[0_0_8px_var(--brand)] shrink-0"></div>
+                  <span className="font-black text-xs uppercase tracking-tighter text-[var(--text-main)] truncate max-w-[120px]">
                     {negocio?.nombre || "Bendita Burger"}
                   </span>
                 </div>
               ) : (
                 <div></div>
               )}
-              <div className="w-6 h-6 rounded bg-neutral-100 flex items-center justify-center">
-                <div className="w-3.5 h-3.5 border border-neutral-400 rounded-sm"></div>
+              <div className="relative flex items-center justify-center w-7 h-7 rounded-lg bg-[var(--bg-card)] border border-[var(--border)] text-[var(--text-main)]">
+                <ShoppingCart className="w-3.5 h-3.5" />
               </div>
             </div>
 
             {/* Simulación Hero Banner */}
-            <div className="relative w-full min-h-[200px] py-6 bg-neutral-900 overflow-hidden flex flex-col items-center justify-center text-center p-4">
+            <div className="relative w-full min-h-[180px] py-8 bg-[var(--bg-card)] border-b border-[var(--border)] overflow-hidden shrink-0 flex flex-col items-center justify-center text-center p-4">
               {heroImagenUrl ? (
                 <img
                   src={heroImagenUrl}
@@ -489,7 +533,7 @@ export default function PortadaConfigPage() {
                 />
               ) : (
                 <div className="absolute inset-0 bg-neutral-800 flex items-center justify-center">
-                  <ImageIcon className="w-10 h-10 text-neutral-600 animate-pulse" />
+                  <ImageIcon className="w-8 h-8 text-neutral-600 animate-pulse" />
                 </div>
               )}
               
@@ -498,57 +542,69 @@ export default function PortadaConfigPage() {
                 style={{ opacity: heroOpacidad / 100 }}
               />
 
-              <div className="relative z-10 space-y-2">
+              <div className="relative z-10 flex flex-col items-center justify-center w-full">
                 {navbarType === "logo" && logoUrl && (
-                  <img src={logoUrl} alt="Logo Preview" style={{ height: `${logoSize}px` }} className="w-auto object-contain mx-auto mb-2 drop-shadow-sm transition-transform hover:scale-105" />
+                  <img src={logoUrl} alt="Logo Preview" style={{ height: `${logoSize}px` }} className="w-auto object-contain mb-3 drop-shadow-md transition-transform hover:scale-105" />
                 )}
-                <h2 className="text-lg md:text-xl font-black text-white uppercase tracking-tight leading-tight drop-shadow-md">
+                <h2 className="text-lg md:text-xl font-black text-white uppercase tracking-tight leading-tight drop-shadow-md mb-1.5">
                   {heroTitulo || negocio?.nombre || "Bendita Burger"}
                 </h2>
                 {heroSubtitulo ? (
-                  <p className="text-white/90 text-[10px] md:text-xs font-medium max-w-xs mx-auto drop-shadow-sm leading-relaxed">
+                  <p className="text-white/90 text-[10px] md:text-xs font-medium max-w-xs mx-auto drop-shadow-sm leading-relaxed mb-3">
                     {heroSubtitulo}
                   </p>
                 ) : (
-                  <p className="text-white/50 text-[10px] italic">
+                  <p className="text-white/50 text-[10px] italic mb-3">
                     Sin subtítulo / eslogan
                   </p>
                 )}
 
-                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-green-500/50 bg-green-500/20 text-[8px] font-black uppercase tracking-wider text-green-400">
+                <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full border border-green-500/50 bg-green-500/20 text-[9px] font-black uppercase tracking-widest text-green-400 backdrop-blur-md">
                   <span className="w-1 h-1 rounded-full bg-green-500 animate-pulse"></span> Abierto ahora
                 </div>
               </div>
             </div>
             
             {/* Simulación del Catálogo / Productos */}
-            <div className="p-4 bg-white space-y-3">
-              <div className="flex gap-2">
-                <div className="h-5 w-10 bg-red-100 rounded-full border border-red-500/10"></div>
-                <div className="h-5 w-12 bg-neutral-100 rounded-full"></div>
-                <div className="h-5 w-12 bg-neutral-100 rounded-full"></div>
+            <div className="p-4 bg-[var(--bg-main)] space-y-3">
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                <div className="h-5 px-2 bg-[var(--brand)] text-[var(--brand-text)] rounded-lg border border-[var(--brand-soft)] text-[8px] font-black uppercase tracking-wider flex items-center justify-center">Todos</div>
+                <div className="h-5 px-2 bg-[var(--bg-card)] text-[var(--text-muted)] rounded-lg border border-[var(--border)] text-[8px] font-black uppercase tracking-wider flex items-center justify-center">Burgers</div>
+                <div className="h-5 px-2 bg-[var(--bg-card)] text-[var(--text-muted)] rounded-lg border border-[var(--border)] text-[8px] font-black uppercase tracking-wider flex items-center justify-center">Bebidas</div>
               </div>
               <div className="grid grid-cols-2 gap-3 pt-1">
-                <div className="border border-neutral-100 rounded-xl p-2 space-y-1.5">
-                  <div className="h-14 bg-neutral-100 rounded-lg"></div>
-                  <div className="h-2 w-3/4 bg-neutral-200 rounded"></div>
-                  <div className="h-2 w-1/2 bg-neutral-200 rounded"></div>
+                <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-2 space-y-1.5 flex flex-col justify-between animate-pulse">
+                  <div className="relative w-full aspect-square bg-[var(--bg-hover)] overflow-hidden rounded-xl border-b border-[var(--border)] shrink-0 flex items-center justify-center">
+                    <Store className="w-5 h-5 text-[var(--text-muted)] opacity-20" />
+                  </div>
+                  <div className="h-2 w-3/4 bg-[var(--border)] rounded"></div>
+                  <div className="h-2 w-1/2 bg-[var(--border)] rounded opacity-50"></div>
+                  <div className="w-full py-1 px-1.5 rounded-lg bg-[var(--brand-soft)] text-[var(--brand)] text-[8px] font-black uppercase flex justify-between items-center border border-[var(--brand-soft)]">
+                    <span>Agregar</span>
+                    <span>$4500</span>
+                  </div>
                 </div>
-                <div className="border border-neutral-100 rounded-xl p-2 space-y-1.5">
-                  <div className="h-14 bg-neutral-100 rounded-lg"></div>
-                  <div className="h-2 w-3/4 bg-neutral-200 rounded"></div>
-                  <div className="h-2 w-1/2 bg-neutral-200 rounded"></div>
+                <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-2 space-y-1.5 flex flex-col justify-between animate-pulse">
+                  <div className="relative w-full aspect-square bg-[var(--bg-hover)] overflow-hidden rounded-xl border-b border-[var(--border)] shrink-0 flex items-center justify-center">
+                    <Store className="w-5 h-5 text-[var(--text-muted)] opacity-20" />
+                  </div>
+                  <div className="h-2 w-3/4 bg-[var(--border)] rounded"></div>
+                  <div className="h-2 w-1/2 bg-[var(--border)] rounded opacity-50"></div>
+                  <div className="w-full py-1 px-1.5 rounded-lg bg-[var(--brand-soft)] text-[var(--brand)] text-[8px] font-black uppercase flex justify-between items-center border border-[var(--brand-soft)]">
+                    <span>Agregar</span>
+                    <span>$5200</span>
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Simulación de Footer Rojo */}
-            <div className="bg-[#f5290f] py-4 px-4 flex flex-col items-center justify-center gap-2 border-t border-black/10 text-white text-[8px] font-bold uppercase tracking-wider">
+            <div className="bg-[#f5290f] py-4 px-4 flex flex-col items-center justify-center gap-1.5 border-t border-white/10 text-white text-[8px] font-bold uppercase tracking-widest">
               <div className="flex items-center gap-1.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-white"></div>
-                <span>{negocio?.nombre || "Bendita Burger"}</span>
+                <div className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,0.8)]"></div>
+                <span className="font-black tracking-tight">{negocio?.nombre || "Bendita Burger"}</span>
               </div>
-              <div className="text-white/60">&copy; {new Date().getFullYear()} Bendita Burger.</div>
+              <div className="text-white/60 font-medium">&copy; {new Date().getFullYear()} {negocio?.nombre || "Bendita Burger"}.</div>
             </div>
 
           </div>
