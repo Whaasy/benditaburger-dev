@@ -463,12 +463,16 @@ export default function PortadaConfigPage() {
             
             {/* Simulación Navbar */}
             <div className="bg-white px-4 py-3 flex items-center justify-between border-b border-gray-200">
-              <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-red-600 shrink-0"></div>
-                <span className="font-black text-sm uppercase tracking-tighter text-black truncate max-w-[120px]">
-                  {negocio?.nombre || "Bendita Burger"}
-                </span>
-              </div>
+              {navbarType !== "logo" ? (
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2 h-2 rounded-full bg-red-600 shrink-0"></div>
+                  <span className="font-black text-sm uppercase tracking-tighter text-black truncate max-w-[120px]">
+                    {negocio?.nombre || "Bendita Burger"}
+                  </span>
+                </div>
+              ) : (
+                <div></div>
+              )}
               <div className="w-6 h-6 rounded bg-neutral-100 flex items-center justify-center">
                 <div className="w-3.5 h-3.5 border border-neutral-400 rounded-sm"></div>
               </div>

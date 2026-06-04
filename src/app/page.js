@@ -512,10 +512,12 @@ function PlantillaBull({ negocio, categorias, productos }) {
                             {/* FILA SUPERIOR (MÓVIL) / LADO IZQUIERDO (DESKTOP) */}
                             <div className="flex items-center justify-between w-full md:w-auto">
                                 {/* NOMBRE DEL NEGOCIO */}
-                                <div className="flex-shrink-0 flex items-center cursor-pointer gap-2" onClick={() => { setVistaActual("catalogo"); window.scrollTo(0, 0); }}>
-                                    <div className="w-2.5 h-2.5 rounded-full bg-[var(--brand)] shadow-[0_0_10px_var(--brand)] shrink-0"></div>
-                                    <span className="font-black text-lg sm:text-xl uppercase tracking-tighter text-[var(--text-main)] truncate max-w-[240px] sm:max-w-[320px]">{negocio.nombre}</span>
-                                </div>
+                                {navbarType !== 'logo' && (
+                                    <div className="flex-shrink-0 flex items-center cursor-pointer gap-2" onClick={() => { setVistaActual("catalogo"); window.scrollTo(0, 0); }}>
+                                        <div className="w-2.5 h-2.5 rounded-full bg-[var(--brand)] shadow-[0_0_10px_var(--brand)] shrink-0"></div>
+                                        <span className="font-black text-lg sm:text-xl uppercase tracking-tighter text-[var(--text-main)] truncate max-w-[240px] sm:max-w-[320px]">{negocio.nombre}</span>
+                                    </div>
+                                )}
 
                                 {/* CARRITO MOBILE */}
                                 <button onClick={() => setIsCartOpen(true)} className="md:hidden relative flex items-center justify-center w-8 h-8 rounded-lg bg-[var(--bg-card)] border border-[var(--border)] text-[var(--text-main)] hover:border-[var(--brand)] transition-colors shrink-0">
