@@ -484,7 +484,7 @@ function PlantillaBull({ negocio, categorias, productos }) {
                 <div className="flex flex-col min-h-screen relative">
 
                     {/* HEADER / PORTADA MÁS COMPACTA */}
-                    <header className="relative w-full h-[180px] md:h-[280px] bg-[var(--bg-card)] border-b border-[var(--border)] overflow-hidden shrink-0">
+                    <header className="relative w-full min-h-[180px] md:min-h-[280px] py-8 md:py-12 bg-[var(--bg-card)] border-b border-[var(--border)] overflow-hidden shrink-0 flex flex-col items-center justify-center text-center p-4">
                         {negocio.hero_imagen_url ? (
                             <img src={negocio.hero_imagen_url} alt="Portada" className="absolute inset-0 w-full h-full object-cover" />
                         ) : (
@@ -492,7 +492,7 @@ function PlantillaBull({ negocio, categorias, productos }) {
                         )}
                         <div className="absolute inset-0 bg-black transition-opacity duration-300" style={{ opacity: overlayOpacity }}></div>
 
-                        <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4 z-10">
+                        <div className="relative z-10 flex flex-col items-center justify-center w-full">
                             {navbarType === 'logo' && logoUrl && (
                                 <img src={logoUrl} alt="Logo" style={{ height: `${logoSize}px` }} className="w-auto object-contain mb-3 drop-shadow-md transition-transform hover:scale-105" />
                             )}

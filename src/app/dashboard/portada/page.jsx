@@ -475,7 +475,7 @@ export default function PortadaConfigPage() {
             </div>
 
             {/* Simulación Hero Banner */}
-            <div className="relative w-full h-[200px] bg-neutral-900 overflow-hidden flex flex-col items-center justify-center text-center p-4">
+            <div className="relative w-full min-h-[200px] py-6 bg-neutral-900 overflow-hidden flex flex-col items-center justify-center text-center p-4">
               {heroImagenUrl ? (
                 <img
                   src={heroImagenUrl}
