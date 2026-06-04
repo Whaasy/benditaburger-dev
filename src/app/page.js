@@ -83,40 +83,40 @@ function CheckoutBull({ negocio, carrito, total, onBack, brandColor, brandTextCo
         }
         if (hasErrors) return;
 
-        // Armar el mensaje de WhatsApp de forma profesional
-        let msg = `🍔 *PEDIDO NUEVO - BENDITA BURGER* 🍔\n\n`;
-        msg += `👤 *Cliente:* ${nombre}\n`;
-        msg += `🛵 *Método de entrega:* ${entrega === "delivery" ? "Envío a domicilio" : "Retiro en local"}\n`;
+        // Armar el mensaje de WhatsApp de forma profesional sin emojis
+        let msg = `*PEDIDO NUEVO - BENDITA BURGER*\n\n`;
+        msg += `*Cliente:* ${nombre}\n`;
+        msg += `*Método de entrega:* ${entrega === "delivery" ? "Envío a domicilio" : "Retiro en local"}\n`;
         if (entrega === "delivery") {
-            msg += `📍 *Dirección:* ${direccion}\n`;
+            msg += `*Dirección:* ${direccion}\n`;
         }
-        msg += `💳 *Método de pago:* ${pago === "efectivo" ? "Efectivo" : "Transferencia"}\n`;
+        msg += `*Método de pago:* ${pago === "efectivo" ? "Efectivo" : "Transferencia"}\n`;
         if (aclaraciones.trim()) {
-            msg += `📝 *Aclaraciones generales:* "${aclaraciones}"\n`;
+            msg += `*Aclaraciones generales:* "${aclaraciones}"\n`;
         }
         msg += `\n-----------------------------------\n\n`;
-        msg += `📋 *Detalle del pedido:*\n`;
+        msg += `*Detalle del pedido:*\n`;
 
         carrito.forEach((item) => {
-            msg += `▫️ *${item.cantidad}x ${item.producto.nombre}*`;
+            msg += `*${item.cantidad}x ${item.producto.nombre}*`;
             if (item.variante) {
                 msg += ` (${item.variante.nombre})`;
             }
             msg += ` - $${((item.precioFinal || item.producto.precio) * item.cantidad).toFixed(0)}\n`;
             if (item.adicionales && item.adicionales.length > 0) {
-                msg += `   ➕ _Extras:_ ${item.adicionales.map(a => a.nombre).join(", ")}\n`;
+                msg += `   - Extras: ${item.adicionales.map(a => a.nombre).join(", ")}\n`;
             }
             if (item.ingredientesRemovidos && item.ingredientesRemovidos.length > 0) {
-                msg += `   ➖ _Sin:_ ${item.ingredientesRemovidos.join(", ")}\n`;
+                msg += `   - Sin: ${item.ingredientesRemovidos.join(", ")}\n`;
             }
             if (item.notes) {
-                msg += `   ✍️ _Nota:_ "${item.notes}"\n`;
+                msg += `   - Nota: "${item.notes}"\n`;
             }
             msg += `\n`;
         });
 
         msg += `-----------------------------------\n`;
-        msg += `💰 *Total a pagar: $${total.toFixed(0)}*`;
+        msg += `*Total a pagar: $${total.toFixed(0)}*`;
 
         const phone = negocio.whatsapp;
         const encodedText = encodeURIComponent(msg);
@@ -223,6 +223,45 @@ function CheckoutBull({ negocio, carrito, total, onBack, brandColor, brandTextCo
                         onChange={(e) => setAclaraciones(e.target.value)}
                         className="w-full bg-[var(--bg-main)] border border-[var(--border)] text-[var(--text-main)] text-sm rounded-xl px-4 py-3 bull-input transition-all resize-none"
                     />
+                </div>
+
+                {/* Resumen del Pedido (Detalles de lo que pidió) */}
+                <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-5 space-y-4 shadow-sm">
+                    <h3 className="text-sm font-black uppercase tracking-wider text-[var(--brand)] mb-2">Detalles del Pedido</h3>
+                    <div className="divide-y divide-[var(--border)]">
+                        {carrito.map((item) => (
+                            <div key={item.idUnico} className="py-3 flex justify-between gap-4 text-sm font-medium">
+                                <div className="space-y-1">
+                                    <p className="font-bold text-[var(--text-main)] uppercase tracking-tight leading-tight">
+                                        {item.cantidad}x {item.producto.nombre}
+                                    </p>
+                                    {item.variante && (
+                                        <p className="text-[10px] text-[var(--text-muted)] font-semibold">
+                                            Variante: {item.variante.nombre}
+                                        </p>
+                                    )}
+                                    {item.adicionales && item.adicionales.length > 0 && (
+                                        <p className="text-[10px] text-[var(--text-muted)] leading-tight">
+                                            + Extras: {item.adicionales.map(a => a.nombre).join(", ")}
+                                        </p>
+                                    )}
+                                    {item.ingredientesRemovidos && item.ingredientesRemovidos.length > 0 && (
+                                        <p className="text-[10px] text-[var(--text-muted)] leading-tight">
+                                            - Sin: {item.ingredientesRemovidos.join(", ")}
+                                        </p>
+                                    )}
+                                    {item.notes && (
+                                        <p className="text-[10px] text-[var(--text-muted)] italic font-normal">
+                                            Nota: "{item.notes}"
+                                        </p>
+                                    )}
+                                </div>
+                                <span className="font-bold text-[var(--text-main)] shrink-0">
+                                    ${((item.precioFinal || item.producto.precio) * item.cantidad).toFixed(0)}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
                 </div>
 
                 {/* Resumen Final */}
