@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import Cropper from "react-easy-crop";
 import getCroppedImg from "@/lib/cropImage";
-import { Check, CheckCircle2, AlertCircle, Image as ImageIcon, Upload, Eye, Type, ShoppingCart, Store } from "lucide-react";
+import { Check, CheckCircle2, AlertCircle, Image as ImageIcon, Upload, Eye, Type, ShoppingCart, Store, Search } from "lucide-react";
 
 // Función experta para calcular el contraste dinámico (Blanco o Negro)
 function getContrastColor(hexColor) {
