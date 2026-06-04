@@ -509,18 +509,28 @@ function PlantillaBull({ negocio, categorias, productos }) {
                     <div className="sticky top-0 z-40 bg-[var(--bg-main)]/90 backdrop-blur-xl border-b border-[var(--border)] shadow-sm">
                         <div className="max-w-[1400px] mx-auto px-4 py-2 md:py-0 md:h-14 flex flex-col md:flex-row md:items-center justify-between gap-2 md:gap-6">
 
-                            {/* FILA SUPERIOR (MÓVIL) / LADO IZQUIERDO (DESKTOP) */}
-                            <div className="flex items-center justify-between w-full md:w-auto">
-                                {/* NOMBRE DEL NEGOCIO */}
-                                {navbarType !== 'logo' && (
+                            {/* NOMBRE DEL NEGOCIO (MÓVIL) - SOLO SE MUESTRA SI ES MODO TEXTO */}
+                            {navbarType !== 'logo' && (
+                                <div className="md:hidden flex items-center justify-between w-full border-b border-[var(--border)] pb-2 mb-1">
                                     <div className="flex-shrink-0 flex items-center cursor-pointer gap-2" onClick={() => { setVistaActual("catalogo"); window.scrollTo(0, 0); }}>
                                         <div className="w-2.5 h-2.5 rounded-full bg-[var(--brand)] shadow-[0_0_10px_var(--brand)] shrink-0"></div>
-                                        <span className="font-black text-lg sm:text-xl uppercase tracking-tighter text-[var(--text-main)] truncate max-w-[240px] sm:max-w-[320px]">{negocio.nombre}</span>
+                                        <span className="font-black text-sm uppercase tracking-tighter text-[var(--text-main)] truncate max-w-[280px]">{negocio.nombre}</span>
                                     </div>
-                                )}
+                                </div>
+                            )}
 
-                                {/* CARRITO MOBILE */}
-                                <button onClick={() => setIsCartOpen(true)} className="md:hidden relative flex items-center justify-center w-8 h-8 rounded-lg bg-[var(--bg-card)] border border-[var(--border)] text-[var(--text-main)] hover:border-[var(--brand)] transition-colors shrink-0 ml-auto">
+                            {/* FILA DE CATEGORÍAS Y CARRITO (MÓVIL) */}
+                            <div className="md:hidden flex items-center gap-3 w-full">
+                                {/* CATEGORIAS MOBILE */}
+                                <div className="flex-1 overflow-x-auto bull-scroll flex items-center gap-2 py-1">
+                                    <button onClick={() => setCategoriaActiva("TODOS")} className={`shrink-0 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${categoriaActiva === "TODOS" ? 'bg-[var(--brand)] text-[var(--brand-text)] shadow-md shadow-[var(--brand-soft)]' : 'bg-[var(--bg-card)] text-[var(--text-muted)] border border-[var(--border)]'}`}>Todos</button>
+                                    {categorias.map(cat => (
+                                        <button key={cat.id} onClick={() => setCategoriaActiva(cat.id)} className={`shrink-0 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${categoriaActiva === cat.id ? 'bg-[var(--brand)] text-[var(--brand-text)] shadow-md shadow-[var(--brand-soft)]' : 'bg-[var(--bg-card)] text-[var(--text-muted)] border border-[var(--border)]'}`}>{cat.nombre}</button>
+                                    ))}
+                                </div>
+
+                                {/* CARRITO MOBILE (EN LA MISMA LÍNEA) */}
+                                <button onClick={() => setIsCartOpen(true)} className="relative flex items-center justify-center w-8 h-8 rounded-lg bg-[var(--bg-card)] border border-[var(--border)] text-[var(--text-main)] hover:border-[var(--brand)] transition-colors shrink-0">
                                     <ShoppingCart className="w-4 h-4" />
                                     {cantidadItems > 0 && (
                                         <span className="absolute -top-1 -right-1 bg-[var(--brand)] text-[var(--brand-text)] text-[9px] font-black w-4 h-4 flex items-center justify-center rounded-full border-2 border-[var(--bg-main)]">
@@ -540,14 +550,6 @@ function PlantillaBull({ negocio, categorias, productos }) {
                                     onChange={(e) => setBusqueda(e.target.value)}
                                     className="w-full bg-[var(--bg-card)] border border-[var(--border)] text-[var(--text-main)] text-xs rounded-lg pl-9 pr-3 py-1.5 bull-input transition-all"
                                 />
-                            </div>
-
-                            {/* CATEGORIAS MOBILE */}
-                            <div className="md:hidden overflow-x-auto bull-scroll flex items-center gap-2 pb-1 w-full">
-                                <button onClick={() => setCategoriaActiva("TODOS")} className={`shrink-0 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${categoriaActiva === "TODOS" ? 'bg-[var(--brand)] text-[var(--brand-text)] shadow-md shadow-[var(--brand-soft)]' : 'bg-[var(--bg-card)] text-[var(--text-muted)] border border-[var(--border)]'}`}>Todos</button>
-                                {categorias.map(cat => (
-                                    <button key={cat.id} onClick={() => setCategoriaActiva(cat.id)} className={`shrink-0 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${categoriaActiva === cat.id ? 'bg-[var(--brand)] text-[var(--brand-text)] shadow-md shadow-[var(--brand-soft)]' : 'bg-[var(--bg-card)] text-[var(--text-muted)] border border-[var(--border)]'}`}>{cat.nombre}</button>
-                                ))}
                             </div>
 
                             {/* CARRITO DESKTOP */}
