@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import Cropper from "react-easy-crop";
 import getCroppedImg from "@/lib/cropImage";
-import { Plus, X, Image as ImageIcon, Trash2, Search, Edit2, AlertTriangle } from "lucide-react";
+import { Plus, X, Image as ImageIcon, Trash2, Search, Edit2, AlertTriangle, ArrowUp, ArrowDown } from "lucide-react";
 
 // FUNCIÓN EXPERTA: Convierte cualquier imagen a formato WEBP ultraligero
 const convertirAWebp = (fileOrBlob) => {
@@ -30,6 +30,8 @@ export default function ProductosPage() {
   const [categorias, setCategorias] = useState([]);
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [modoOrden, setModoOrden] = useState(false);
+  const [productosAOrdenar, setProductosAOrdenar] = useState([]);
 
   // Modals state
   const [modalCategoriaOpen, setModalCategoriaOpen] = useState(false);
@@ -51,7 +53,12 @@ export default function ProductosPage() {
       x4: { activo: false, precio: "" }
     },
     adicionales: [],
-    ingredientes_removibles_raw: ""
+    ingredientes_removibles_raw: "",
+    con_descuento: false,
+    precio_descuento: "",
+    descuento_hasta: "",
+    descuento_limite_tipo: "sin_limite",
+    orden: 0
   });
 
   // Cropper states
@@ -113,19 +120,53 @@ export default function ProductosPage() {
 
   const handleCrearCategoria = async (e) => {
     e.preventDefault();
+    if (!nuevaCategoria.trim()) return;
     if (limiteCategoriasAlcanzado) return;
     setLoadingAction(true);
     setErrorMensaje(null);
     const { error } = await supabase
       .from("categorias")
-      .insert([{ negocio_id: negocio.id, nombre: nuevaCategoria }]);
+      .insert([{ negocio_id: negocio.id, nombre: nuevaCategoria.trim() }]);
     if (error) setErrorMensaje(error.message);
     else {
       setNuevaCategoria("");
-      setModalCategoriaOpen(false);
       await cargarDatos();
     }
     setLoadingAction(false);
+  };
+
+  const handleEliminarCategoria = async (id) => {
+    if (categorias.length <= 1) {
+      setErrorMensaje("Debe haber al menos una categoría en el catálogo.");
+      return;
+    }
+    setLoadingAction(true);
+    setErrorMensaje(null);
+    try {
+      // Verificar si hay productos que dependen de esta categoría
+      const { data: prodsCount, error: countError } = await supabase
+        .from("productos")
+        .select("id")
+        .eq("categoria_id", id);
+      
+      if (prodsCount && prodsCount.length > 0) {
+        setErrorMensaje("No se puede eliminar la categoría porque contiene productos. Elimina o mueve los productos de categoría primero.");
+        setLoadingAction(false);
+        return;
+      }
+
+      const { error } = await supabase
+        .from("categorias")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+      await cargarDatos();
+    } catch (err) {
+      setErrorMensaje(err.message);
+    } finally {
+      setLoadingAction(false);
+    }
   };
 
   const onCropComplete = useCallback((croppedArea, croppedAreaPixels) => {
@@ -235,6 +276,17 @@ export default function ProductosPage() {
           .filter(i => i.length > 0);
       }
 
+      let descuentoHastaFinal = null;
+      if (nuevoProducto.con_descuento) {
+        if (nuevoProducto.descuento_limite_tipo === "hoy") {
+          const hoy = new Date();
+          hoy.setHours(23, 59, 59, 999);
+          descuentoHastaFinal = hoy.toISOString();
+        } else if (nuevoProducto.descuento_limite_tipo === "personalizado" && nuevoProducto.descuento_hasta) {
+          descuentoHastaFinal = new Date(nuevoProducto.descuento_hasta).toISOString();
+        }
+      }
+
       if (productoEditandoId) {
         const { error: updateError } = await supabase
           .from("productos")
@@ -247,7 +299,11 @@ export default function ProductosPage() {
             tipo_producto: nuevoProducto.tipo_producto,
             variantes: variantesFinales,
             adicionales: adicionalesFinales,
-            ingredientes_removibles: ingredientesFinales
+            ingredientes_removibles: ingredientesFinales,
+            con_descuento: nuevoProducto.con_descuento,
+            precio_descuento: nuevoProducto.con_descuento && nuevoProducto.precio_descuento ? parseFloat(nuevoProducto.precio_descuento) : null,
+            descuento_hasta: descuentoHastaFinal,
+            orden: nuevoProducto.orden || 0
           })
           .eq("id", productoEditandoId);
 
@@ -265,7 +321,11 @@ export default function ProductosPage() {
             tipo_producto: nuevoProducto.tipo_producto,
             variantes: variantesFinales,
             adicionales: adicionalesFinales,
-            ingredientes_removibles: ingredientesFinales
+            ingredientes_removibles: ingredientesFinales,
+            con_descuento: nuevoProducto.con_descuento,
+            precio_descuento: nuevoProducto.con_descuento && nuevoProducto.precio_descuento ? parseFloat(nuevoProducto.precio_descuento) : null,
+            descuento_hasta: descuentoHastaFinal,
+            orden: nuevoProducto.orden || 0
           }]);
 
         if (insertError) throw insertError;
@@ -285,7 +345,12 @@ export default function ProductosPage() {
           x4: { activo: false, precio: "" }
         },
         adicionales: [],
-        ingredientes_removibles_raw: ""
+        ingredientes_removibles_raw: "",
+        con_descuento: false,
+        precio_descuento: "",
+        descuento_hasta: "",
+        descuento_limite_tipo: "sin_limite",
+        orden: 0
       });
       setCroppedImagePreview(null);
       setImageSrc(null);
@@ -325,6 +390,29 @@ export default function ProductosPage() {
       rawIng = prod.ingredientes_removibles.join(", ");
     }
 
+    let con_descuento = prod.con_descuento || false;
+    let precio_descuento = prod.precio_descuento || "";
+    let descuento_hasta = "";
+    let descuento_limite_tipo = "sin_limite";
+    let orden = prod.orden || 0;
+
+    if (prod.descuento_hasta) {
+      const limitDate = new Date(prod.descuento_hasta);
+      const today = new Date();
+      const isToday = limitDate.getDate() === today.getDate() &&
+                      limitDate.getMonth() === today.getMonth() &&
+                      limitDate.getFullYear() === today.getFullYear();
+      
+      if (isToday && limitDate.getHours() === 23 && limitDate.getMinutes() === 59) {
+        descuento_limite_tipo = "hoy";
+      } else {
+        descuento_limite_tipo = "personalizado";
+        const tzoffset = limitDate.getTimezoneOffset() * 60000;
+        const localISOTime = (new Date(limitDate.getTime() - tzoffset)).toISOString().slice(0, 16);
+        descuento_hasta = localISOTime;
+      }
+    }
+
     setNuevoProducto({
       nombre: prod.nombre,
       descripcion: prod.descripcion || "",
@@ -334,7 +422,12 @@ export default function ProductosPage() {
       tipo_producto: prod.tipo_producto || "normal",
       variantes_hamburguesa,
       adicionales,
-      ingredientes_removibles_raw: rawIng
+      ingredientes_removibles_raw: rawIng,
+      con_descuento,
+      precio_descuento,
+      descuento_hasta,
+      descuento_limite_tipo,
+      orden
     });
     setCroppedImagePreview(prod.imagen_url);
     setProductoEditandoId(prod.id);
@@ -351,6 +444,97 @@ export default function ProductosPage() {
     try {
       await supabase.from("productos").delete().eq("id", productoAEliminar);
       setProductoAEliminar(null);
+      await cargarDatos();
+    } catch (err) {
+      setErrorMensaje(err.message);
+    } finally {
+      setLoadingAction(false);
+    }
+  };
+
+  // Helper to dynamically count products by category and summarize them
+  const obtenerResumenProductos = () => {
+    if (productos.length === 0) return "No tienes productos en tu catálogo.";
+
+    const conteoPorCategoria = {};
+    productos.forEach(p => {
+      conteoPorCategoria[p.categoria_id] = (conteoPorCategoria[p.categoria_id] || 0) + 1;
+    });
+
+    const partes = [];
+    categorias.forEach(cat => {
+      const cant = conteoPorCategoria[cat.id] || 0;
+      if (cant > 0) {
+        partes.push(`${cant} ${cat.nombre.toLowerCase()}`);
+      }
+    });
+
+    if (partes.length === 0) {
+      return `Tienes ${productos.length} productos en total.`;
+    }
+    if (partes.length === 1) {
+      return `Gestiona tu menú. Tienes ${partes[0]} en total.`;
+    }
+    if (partes.length === 2) {
+      return `Gestiona tu menú. Tienes ${partes[0]} y ${partes[1]} en total.`;
+    }
+    const ultimo = partes.pop();
+    return `Gestiona tu menú. Tienes ${partes.join(", ")} y ${ultimo} en total.`;
+  };
+
+  // Helper to check if a product has a discount active
+  const isDiscountActive = (prod) => {
+    if (!prod || !prod.con_descuento || !prod.precio_descuento) return false;
+    if (prod.descuento_hasta) {
+      const limite = new Date(prod.descuento_hasta);
+      if (new Date() >= limite) return false;
+    }
+    return true;
+  };
+
+  const productosOrdenados = [...productos].sort((a, b) => {
+    const aDesc = isDiscountActive(a);
+    const bDesc = isDiscountActive(b);
+    if (aDesc && !bDesc) return -1;
+    if (!aDesc && bDesc) return 1;
+
+    const aOrden = a.orden || 0;
+    const bOrden = b.orden || 0;
+    if (aOrden !== bOrden) return bOrden - aOrden;
+    return new Date(b.created_at) - new Date(a.created_at);
+  });
+
+  const handleMoverLocalmente = (index, direction) => {
+    if (direction === 'up' && index === 0) return;
+    if (direction === 'down' && index === productosAOrdenar.length - 1) return;
+
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    const updatedList = [...productosAOrdenar];
+    const temp = updatedList[index];
+    updatedList[index] = updatedList[newIndex];
+    updatedList[newIndex] = temp;
+    setProductosAOrdenar(updatedList);
+  };
+
+  const handleGuardarOrden = async () => {
+    setLoadingAction(true);
+    setErrorMensaje(null);
+    try {
+      const updatePromises = productosAOrdenar.map((prod, idx) => {
+        const priorityValue = (productosAOrdenar.length - idx) * 10;
+        return supabase
+          .from('productos')
+          .update({ orden: priorityValue })
+          .eq('id', prod.id);
+      });
+
+      const results = await Promise.all(updatePromises);
+      const errors = results.filter(r => r.error);
+      if (errors.length > 0) {
+        throw new Error(errors[0].error.message);
+      }
+
+      setModoOrden(false);
       await cargarDatos();
     } catch (err) {
       setErrorMensaje(err.message);
@@ -377,151 +561,273 @@ export default function ProductosPage() {
       {/* HEADER */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Burgers y Bebidas</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Catálogo</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Gestiona tu menú. Tienes {productos.length} Burgers y Bebidas en total.
+            {obtenerResumenProductos()}
           </p>
         </div>
-        <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
-          <button
-            onClick={() => setModalCategoriaOpen(true)}
-            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-[#0F0F11] text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors text-sm border border-gray-200 dark:border-neutral-700 shadow-sm cursor-pointer"
-          >
-            Nueva Categoría
-          </button>
+        <div className="flex flex-row flex-wrap items-center gap-3 w-full sm:w-auto">
+          {!modoOrden && (
+            <>
+              <button
+                onClick={() => {
+                  setProductosAOrdenar(productosOrdenados);
+                  setModoOrden(true);
+                }}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-[#0F0F11] text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors text-sm border border-gray-200 dark:border-neutral-700 shadow-sm cursor-pointer whitespace-nowrap"
+              >
+                Ordenar Catálogo
+              </button>
 
-          <button
-            onClick={() => {
-              setProductoEditandoId(null);
-              setNuevoProducto({
-                nombre: "",
-                descripcion: "",
-                precio: "",
-                categoria_id: categorias[0]?.id || "",
-                imagen: null,
-                tipo_producto: "normal",
-                variantes_hamburguesa: {
-                  simple: { activo: false, precio: "" },
-                  doble: { activo: false, precio: "" },
-                  triple: { activo: false, precio: "" },
-                  x4: { activo: false, precio: "" }
-                },
-                adicionales: [],
-                ingredientes_removibles_raw: ""
-              });
-              setCroppedImagePreview(null);
-              setModalProductoOpen(true);
-            }}
-            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-gray-900 text-white dark:bg-white dark:text-black rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors text-sm shadow-sm cursor-pointer"
-          >
-            <Plus className="w-4 h-4" /> Agregar Burger o Bebida
-          </button>
+              <button
+                onClick={() => setModalCategoriaOpen(true)}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-[#0F0F11] text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors text-sm border border-gray-200 dark:border-neutral-700 shadow-sm cursor-pointer whitespace-nowrap"
+              >
+                Categorías
+              </button>
+
+              <button
+                onClick={() => {
+                  setProductoEditandoId(null);
+                  setNuevoProducto({
+                    nombre: "",
+                    descripcion: "",
+                    precio: "",
+                    categoria_id: categorias[0]?.id || "",
+                    imagen: null,
+                    tipo_producto: "normal",
+                    variantes_hamburguesa: {
+                      simple: { activo: false, precio: "" },
+                      doble: { activo: false, precio: "" },
+                      triple: { activo: false, precio: "" },
+                      x4: { activo: false, precio: "" }
+                    },
+                    adicionales: [],
+                    ingredientes_removibles_raw: "",
+                    con_descuento: false,
+                    precio_descuento: "",
+                    descuento_hasta: "",
+                    descuento_limite_tipo: "sin_limite",
+                    orden: 0
+                  });
+                  setCroppedImagePreview(null);
+                  setModalProductoOpen(true);
+                }}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-gray-900 text-white dark:bg-white dark:text-black rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors text-sm shadow-sm cursor-pointer whitespace-nowrap"
+              >
+                <Plus className="w-4 h-4" /> Agregar
+              </button>
+            </>
+          )}
         </div>
       </div>
 
       {/* LISTADO DE PRODUCTOS (TABLA SAAS) */}
-      <div className="bg-white dark:bg-[#0F0F11] rounded-xl shadow-sm border border-gray-200 dark:border-neutral-800 overflow-hidden">
-        {productos.length === 0 ? (
-          <div className="p-16 text-center flex flex-col items-center">
-            <div className="w-16 h-16 bg-gray-50 dark:bg-neutral-800 rounded-full flex items-center justify-center mb-4 border border-gray-100 dark:border-neutral-700">
-              <ImageIcon className="w-8 h-8 text-gray-400 dark:text-gray-500" />
+      {modoOrden ? (
+        <div className="bg-white dark:bg-[#0F0F11] rounded-xl shadow-sm border border-gray-200 dark:border-neutral-800 p-6 space-y-4">
+          <div className="flex flex-col gap-4 border-b border-gray-100 dark:border-neutral-800 pb-4">
+            <div>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Ordenar Catálogo</h3>
+              <p className="text-xs text-gray-500">Usa las flechas para ordenar los productos a tu gusto. Cuando termines, guarda los cambios.</p>
             </div>
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">No hay Burgers ni Bebidas</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm mb-6">Aún no has añadido nada a tu menú. Crea tu primera categoría y añade una Burger o Bebida para comenzar.</p>
-            <button
-              onClick={() => setModalProductoOpen(true)}
-              className="flex items-center gap-2 px-5 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-black rounded-lg font-medium hover:bg-gray-800 transition-colors shadow-sm text-sm"
-            >
-              <Plus className="w-4 h-4" /> Añadir la primera
-            </button>
+            <div className="flex gap-2 w-full sm:w-auto">
+              <button 
+                onClick={() => setModoOrden(false)}
+                disabled={loadingAction}
+                className="flex-1 sm:flex-none px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-neutral-800 dark:text-gray-300 dark:hover:bg-neutral-700 rounded-lg text-xs font-bold transition-colors cursor-pointer disabled:opacity-50 border border-gray-200 dark:border-neutral-700"
+              >
+                Cancelar
+              </button>
+              <button 
+                onClick={handleGuardarOrden}
+                disabled={loadingAction}
+                className="flex-1 sm:flex-none px-4 py-2 bg-yellow-500 hover:bg-yellow-400 text-black rounded-lg text-xs font-black uppercase tracking-wider transition-all cursor-pointer disabled:opacity-50"
+              >
+                {loadingAction ? "Guardando..." : "Guardar Cambios"}
+              </button>
+            </div>
           </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse whitespace-nowrap">
-              <thead>
-                <tr className="bg-gray-50/50 dark:bg-neutral-900/50 border-b border-gray-200 dark:border-neutral-800">
-                  <th className="py-3 px-6 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-20">Foto</th>
-                  <th className="py-3 px-6 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Detalles</th>
-                  <th className="py-3 px-6 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Categoría</th>
-                  <th className="py-3 px-6 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Precio</th>
-                  <th className="py-3 px-6 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-right">Acciones</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-neutral-800">
-                {productos.map((prod) => {
-                  const catNombre = categorias.find(c => c.id === prod.categoria_id)?.nombre || "Sin categoría";
-                  return (
-                    <tr key={prod.id} className="hover:bg-gray-50 dark:hover:bg-neutral-800/50 transition-colors group">
-                      <td className="py-4 px-6">
-                        {prod.imagen_url ? (
-                          <img src={prod.imagen_url} alt={prod.nombre} className="w-10 h-10 rounded-md object-cover border border-gray-200 dark:border-neutral-700 shadow-sm" />
-                        ) : (
-                          <div className="w-10 h-10 rounded-md bg-gray-100 dark:bg-neutral-800 flex items-center justify-center text-gray-400 border border-gray-200 dark:border-neutral-700 shadow-sm">
-                            <ImageIcon className="w-4 h-4" />
-                          </div>
-                        )}
-                      </td>
-                      <td className="py-4 px-6">
-                        <p className="text-sm font-semibold text-gray-900 dark:text-white">{prod.nombre}</p>
-                        {prod.descripcion && (
-                          <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[250px] mt-0.5">{prod.descripcion}</p>
-                        )}
-                      </td>
-                      <td className="py-4 px-6">
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-700 dark:bg-neutral-800 dark:text-gray-300 border border-gray-200 dark:border-neutral-700">
-                          {catNombre}
-                        </span>
-                      </td>
-                      <td className="py-4 px-6">
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">${prod.precio}</span>
-                      </td>
-                      <td className="py-4 px-6 text-right">
-                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button onClick={() => abrirModalEdicion(prod)} className="p-1.5 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md transition-colors">
-                            <Edit2 className="w-4 h-4" />
-                          </button>
-                          <button onClick={() => handleEliminarProducto(prod.id)} className="p-1.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 rounded-md transition-colors">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
 
-      {/* MODAL NUEVA CATEGORÍA */}
+          <div className="divide-y divide-gray-100 dark:divide-neutral-800 max-w-xl">
+            {productosAOrdenar.map((prod, index) => (
+              <div key={prod.id} className="py-3 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-black text-gray-400 w-5">{index + 1}</span>
+                  {prod.imagen_url ? (
+                    <img src={prod.imagen_url} alt="" className="w-10 h-10 rounded-md object-cover border border-gray-200 dark:border-neutral-700" />
+                  ) : (
+                    <div className="w-10 h-10 rounded-md bg-gray-100 dark:bg-neutral-800 flex items-center justify-center text-gray-400 border border-gray-200 dark:border-neutral-700">
+                      <ImageIcon className="w-4 h-4" />
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900 dark:text-white">{prod.nombre}</p>
+                    {isDiscountActive(prod) && (
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400">
+                        Oferta
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => handleMoverLocalmente(index, 'up')}
+                    disabled={index === 0}
+                    className={`p-2 rounded-lg border transition-all ${index === 0 ? 'bg-gray-50 border-gray-100 text-gray-300 dark:bg-neutral-900 dark:border-neutral-800 dark:text-gray-700 cursor-not-allowed' : 'bg-white hover:bg-gray-50 border-gray-200 text-gray-700 dark:bg-neutral-800 dark:border-neutral-700 dark:text-gray-300 dark:hover:bg-neutral-700'}`}
+                  >
+                    <ArrowUp className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleMoverLocalmente(index, 'down')}
+                    disabled={index === productosAOrdenar.length - 1}
+                    className={`p-2 rounded-lg border transition-all ${index === productosAOrdenar.length - 1 ? 'bg-gray-50 border-gray-100 text-gray-300 dark:bg-neutral-900 dark:border-neutral-800 dark:text-gray-700 cursor-not-allowed' : 'bg-white hover:bg-gray-50 border-gray-200 text-gray-700 dark:bg-neutral-800 dark:border-neutral-700 dark:text-gray-300 dark:hover:bg-neutral-700'}`}
+                  >
+                    <ArrowDown className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="bg-white dark:bg-[#0F0F11] rounded-xl shadow-sm border border-gray-200 dark:border-neutral-800 overflow-hidden">
+          {productos.length === 0 ? (
+            <div className="p-16 text-center flex flex-col items-center">
+              <div className="w-16 h-16 bg-gray-50 dark:bg-neutral-800 rounded-full flex items-center justify-center mb-4 border border-gray-100 dark:border-neutral-700">
+                <ImageIcon className="w-8 h-8 text-gray-400 dark:text-gray-500" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">No hay Burgers ni Bebidas</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm mb-6">Aún no has añadido nada a tu menú. Crea tu primera categoría y añade una Burger o Bebida para comenzar.</p>
+              <button
+                onClick={() => setModalProductoOpen(true)}
+                className="flex items-center gap-2 px-5 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-black rounded-lg font-medium hover:bg-gray-800 transition-colors shadow-sm text-sm"
+              >
+                <Plus className="w-4 h-4" /> Añadir la primera
+              </button>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse whitespace-nowrap">
+                <thead>
+                  <tr className="bg-gray-50/50 dark:bg-neutral-900/50 border-b border-gray-200 dark:border-neutral-800">
+                    <th className="py-3 px-6 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-20">Foto</th>
+                    <th className="py-3 px-6 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Detalles</th>
+                    <th className="py-3 px-6 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Categoría</th>
+                    <th className="py-3 px-6 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Precio</th>
+                    <th className="py-3 px-6 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Descuento</th>
+                    <th className="py-3 px-6 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-right">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 dark:divide-neutral-800">
+                  {productosOrdenados.map((prod, index) => {
+                    const catNombre = categorias.find(c => c.id === prod.categoria_id)?.nombre || "Sin categoría";
+                    return (
+                      <tr key={prod.id} className="hover:bg-gray-50 dark:hover:bg-neutral-800/50 transition-colors group">
+                        <td className="py-4 px-6">
+                          {prod.imagen_url ? (
+                            <img src={prod.imagen_url} alt={prod.nombre} className="w-10 h-10 rounded-md object-cover border border-gray-200 dark:border-neutral-700 shadow-sm" />
+                          ) : (
+                            <div className="w-10 h-10 rounded-md bg-gray-100 dark:bg-neutral-800 flex items-center justify-center text-gray-400 border border-gray-200 dark:border-neutral-700 shadow-sm">
+                              <ImageIcon className="w-4 h-4" />
+                            </div>
+                          )}
+                        </td>
+                        <td className="py-4 px-6">
+                          <p className="text-sm font-semibold text-gray-900 dark:text-white">{prod.nombre}</p>
+                          {prod.descripcion && (
+                            <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[250px] mt-0.5">{prod.descripcion}</p>
+                          )}
+                        </td>
+                        <td className="py-4 px-6">
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-700 dark:bg-neutral-800 dark:text-gray-300 border border-gray-200 dark:border-neutral-700">
+                            {catNombre}
+                          </span>
+                        </td>
+                        <td className="py-4 px-6">
+                          <span className="text-sm font-medium text-gray-900 dark:text-white">${prod.precio}</span>
+                        </td>
+                        <td className="py-4 px-6">
+                          {prod.con_descuento && prod.precio_descuento ? (
+                            <div className="flex flex-col">
+                              <span className="text-sm font-bold text-green-600 dark:text-green-400">${prod.precio_descuento}</span>
+                              {prod.descuento_hasta && (
+                                <span className="text-[10px] text-gray-400">
+                                  {new Date(prod.descuento_hasta) < new Date() ? 'Expirado' : `Vence: ${new Date(prod.descuento_hasta).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`}
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-xs text-gray-400">—</span>
+                          )}
+                        </td>
+                        <td className="py-4 px-6 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <button onClick={() => abrirModalEdicion(prod)} className="p-1.5 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md transition-colors">
+                              <Edit2 className="w-4 h-4" />
+                            </button>
+                            <button onClick={() => handleEliminarProducto(prod.id)} className="p-1.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 rounded-md transition-colors">
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* MODAL GESTIONAR CATEGORÍAS */}
       {modalCategoriaOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white dark:bg-[#0F0F11] rounded-xl w-full max-w-md shadow-2xl border border-gray-200 dark:border-neutral-800 overflow-hidden transform transition-all">
             <div className="flex justify-between items-center p-6 border-b border-gray-100 dark:border-neutral-800">
-              <h3 className="font-semibold text-lg text-gray-900 dark:text-white">Nueva Categoría</h3>
+              <h3 className="font-semibold text-lg text-gray-900 dark:text-white">Categorías</h3>
               <button onClick={() => setModalCategoriaOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-md p-1 transition-colors"><X className="w-5 h-5" /></button>
             </div>
-            <div className="p-6 bg-gray-50/50 dark:bg-neutral-900/20">
-              <form onSubmit={handleCrearCategoria} className="space-y-5">
-                <div className="space-y-1.5">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Nombre de la categoría</label>
+            <div className="p-6 space-y-6 bg-gray-50/50 dark:bg-neutral-900/20">
+              {/* Formulario para agregar */}
+              <form onSubmit={handleCrearCategoria} className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Nueva Categoría</label>
+                <div className="flex gap-2">
                   <input
                     type="text"
                     required
                     placeholder="Ej: Hamburguesas, Bebidas..."
                     value={nuevaCategoria}
                     onChange={(e) => setNuevaCategoria(e.target.value)}
-                    className="w-full px-3 py-2 bg-white dark:bg-[#1A1A1E] border border-gray-300 dark:border-neutral-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all shadow-sm"
+                    className="flex-1 px-3 py-2 bg-white dark:bg-[#1A1A1E] border border-gray-300 dark:border-neutral-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all shadow-sm"
                   />
-                </div>
-                <div className="flex justify-end gap-3 pt-2">
-                  <button type="button" onClick={() => setModalCategoriaOpen(false)} className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">Cancelar</button>
-                  <button type="submit" disabled={loadingAction} className="px-4 py-2 text-sm font-medium bg-gray-900 text-white dark:bg-white dark:text-black rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 disabled:opacity-50 transition-colors shadow-sm">
-                    {loadingAction ? "Guardando..." : "Crear categoría"}
+                  <button type="submit" disabled={loadingAction} className="px-4 py-2 text-sm font-semibold bg-gray-900 text-white dark:bg-white dark:text-black rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 disabled:opacity-50 transition-colors shadow-sm whitespace-nowrap">
+                    {loadingAction ? "..." : "Agregar"}
                   </button>
                 </div>
               </form>
+
+              {/* Listado de categorías */}
+              <div className="space-y-3">
+                <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Existentes ({categorias.length})</h4>
+                <div className="max-h-60 overflow-y-auto divide-y divide-gray-100 dark:divide-neutral-800 border border-gray-200 dark:border-neutral-800 rounded-lg bg-white dark:bg-[#0F0F11]">
+                  {categorias.map((cat) => (
+                    <div key={cat.id} className="flex items-center justify-between p-3">
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">{cat.nombre}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleEliminarCategoria(cat.id)}
+                        disabled={loadingAction || categorias.length <= 1}
+                        className={`p-1.5 rounded-md transition-colors ${categorias.length <= 1 ? "text-gray-300 dark:text-neutral-800 cursor-not-allowed" : "text-gray-400 hover:text-red-600 dark:hover:text-red-400"}`}
+                        title={categorias.length <= 1 ? "No puedes eliminar la única categoría" : "Eliminar categoría"}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -586,6 +892,11 @@ export default function ProductosPage() {
                           <option key={c.id} value={c.id}>{c.nombre}</option>
                         ))}
                       </select>
+                    </div>
+
+                    <div className="space-y-1.5 col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Posición de Orden en Catálogo</label>
+                      <input type="number" value={nuevoProducto.orden} onChange={(e) => setNuevoProducto({ ...nuevoProducto, orden: parseInt(e.target.value) || 0 })} className="w-full px-3 py-2 bg-white dark:bg-[#1A1A1E] border border-gray-300 dark:border-neutral-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-black dark:focus:ring-white shadow-sm" placeholder="Ej: 10 (Números más altos aparecen primero en el catálogo)" />
                     </div>
                   </div>
 
@@ -708,6 +1019,62 @@ export default function ProductosPage() {
                       className="w-full px-3 py-2 bg-white dark:bg-[#1A1A1E] border border-gray-300 dark:border-neutral-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-black dark:focus:ring-white shadow-sm"
                       placeholder="Ej: Cebolla, Tomate, Lechuga, Aderezos"
                     />
+                  </div>
+
+                  {/* SECCIÓN DESCUENTOS */}
+                  <div className="space-y-3 bg-yellow-500/5 dark:bg-yellow-500/5 p-4 rounded-xl border border-yellow-500/20">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={nuevoProducto.con_descuento}
+                        onChange={(e) => setNuevoProducto({ ...nuevoProducto, con_descuento: e.target.checked })}
+                        className="w-4 h-4 rounded border-gray-300 text-yellow-600 focus:ring-yellow-500"
+                      />
+                      <span className="text-sm font-bold text-gray-900 dark:text-white">Aplicar Descuento / Oferta</span>
+                    </label>
+
+                    {nuevoProducto.con_descuento && (
+                      <div className="space-y-3 pt-1">
+                        <div className="space-y-1.5">
+                          <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">Precio con Descuento ($)</label>
+                          <input
+                            type="number"
+                            step="0.01"
+                            required
+                            placeholder="Ej: 5900"
+                            value={nuevoProducto.precio_descuento}
+                            onChange={(e) => setNuevoProducto({ ...nuevoProducto, precio_descuento: e.target.value })}
+                            className="w-full px-3 py-2 bg-white dark:bg-[#1A1A1E] border border-gray-300 dark:border-neutral-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-yellow-500 shadow-sm"
+                          />
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">Duración del Descuento</label>
+                          <select
+                            value={nuevoProducto.descuento_limite_tipo}
+                            onChange={(e) => setNuevoProducto({ ...nuevoProducto, descuento_limite_tipo: e.target.value })}
+                            className="w-full px-3 py-2 bg-white dark:bg-[#1A1A1E] border border-gray-300 dark:border-neutral-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-yellow-500 shadow-sm"
+                          >
+                            <option value="sin_limite">Indefinido (Hasta que se desactive manualmente)</option>
+                            <option value="hoy">Válido solo por el día de hoy (hasta las 23:59 hs)</option>
+                            <option value="personalizado">Válido hasta una fecha/hora específica</option>
+                          </select>
+                        </div>
+
+                        {nuevoProducto.descuento_limite_tipo === "personalizado" && (
+                          <div className="space-y-1.5">
+                            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300">Fecha y Hora de Expiración</label>
+                            <input
+                              type="datetime-local"
+                              required
+                              value={nuevoProducto.descuento_hasta}
+                              onChange={(e) => setNuevoProducto({ ...nuevoProducto, descuento_hasta: e.target.value })}
+                              className="w-full px-3 py-2 bg-white dark:bg-[#1A1A1E] border border-gray-300 dark:border-neutral-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-yellow-500 shadow-sm text-gray-900 dark:text-white"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   <div className="space-y-1.5">

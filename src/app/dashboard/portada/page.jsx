@@ -188,18 +188,18 @@ export default function PortadaConfigPage() {
     setMensaje({ tipo: "", texto: "" });
 
     try {
-      // Keep existing theme (light/dark) when updating tema_tienda configurations
-      let currentTheme = 'light';
+      // Keep existing configurations when updating tema_tienda
+      let existingConfig = {};
       try {
         if (negocio.tema_tienda && negocio.tema_tienda.startsWith('{')) {
-          const configObj = JSON.parse(negocio.tema_tienda);
-          currentTheme = configObj.theme || 'light';
-        } else {
-          currentTheme = negocio.tema_tienda === 'dark' ? 'dark' : 'light';
+          existingConfig = JSON.parse(negocio.tema_tienda);
         }
       } catch (e) {}
 
+      const currentTheme = existingConfig.theme || (negocio.tema_tienda === 'dark' ? 'dark' : 'light');
+
       const newTemaTiendaConfig = JSON.stringify({
+        ...existingConfig,
         theme: currentTheme,
         navbar_type: navbarType,
         logo_url: logoUrl,
@@ -355,20 +355,6 @@ export default function PortadaConfigPage() {
                   />
                 </div>
 
-                <div className="relative flex items-center py-1">
-                  <div className="flex-grow border-t border-gray-200 dark:border-neutral-800"></div>
-                  <span className="flex-shrink mx-4 text-xs font-bold text-gray-400">o pega enlace directo</span>
-                  <div className="flex-grow border-t border-gray-200 dark:border-neutral-800"></div>
-                </div>
-
-                <input
-                  type="text"
-                  value={logoUrl}
-                  onChange={(e) => setLogoUrl(e.target.value)}
-                  className="w-full bg-white dark:bg-[#1A1A1E] text-gray-900 dark:text-white border border-gray-300 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
-                  placeholder=""
-                />
-
                 <div className="space-y-1.5 pt-2">
                   <div className="flex justify-between text-sm font-semibold text-gray-700 dark:text-gray-300">
                     <span>Tamaño del Logo (Altura)</span>
@@ -443,20 +429,6 @@ export default function PortadaConfigPage() {
                   className="hidden"
                 />
               </div>
-
-              <div className="relative flex items-center py-1">
-                <div className="flex-grow border-t border-gray-200 dark:border-neutral-800"></div>
-                <span className="flex-shrink mx-4 text-xs font-bold text-gray-400">o pega enlace directo</span>
-                <div className="flex-grow border-t border-gray-200 dark:border-neutral-800"></div>
-              </div>
-
-              <input
-                type="text"
-                value={heroImagenUrl}
-                onChange={(e) => setHeroImagenUrl(e.target.value)}
-                className="w-full bg-white dark:bg-[#1A1A1E] text-gray-900 dark:text-white border border-gray-300 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
-                placeholder=""
-              />
             </div>
 
             <div className="space-y-1.5 pt-2">

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
-import { Check, CheckCircle2, AlertCircle } from "lucide-react";
+import { Check, CheckCircle2, AlertCircle, Share2 } from "lucide-react";
 
 export default function ConfiguracionesPage() {
   const router = useRouter();
@@ -12,6 +12,9 @@ export default function ConfiguracionesPage() {
   const [guardando, setGuardando] = useState(false);
   const [mensaje, setMensaje] = useState({ tipo: "", texto: "" });
   const [whatsapp, setWhatsapp] = useState("");
+  const [redInstagram, setRedInstagram] = useState("");
+  const [redFacebook, setRedFacebook] = useState("");
+  const [redTiktok, setRedTiktok] = useState("");
   
   // Schedule state fields
   const [horariosActivo, setHorariosActivo] = useState(false);
@@ -41,6 +44,9 @@ export default function ConfiguracionesPage() {
           setHorariosActivo(data.horarios_activo || false);
           setHorarioApertura(data.horario_apertura || "");
           setHorarioCierre(data.horario_cierre || "");
+          setRedInstagram(data.red_instagram || "");
+          setRedFacebook(data.red_facebook || "");
+          setRedTiktok(data.red_tiktok || "");
         }
       } catch (error) {
         console.error("Error loading business configurations:", error);
@@ -64,7 +70,10 @@ export default function ConfiguracionesPage() {
           whatsapp,
           horarios_activo: horariosActivo,
           horario_apertura: horarioApertura,
-          horario_cierre: horarioCierre
+          horario_cierre: horarioCierre,
+          red_instagram: redInstagram,
+          red_facebook: redFacebook,
+          red_tiktok: redTiktok
         })
         .eq("id", negocio.id);
 
@@ -76,7 +85,10 @@ export default function ConfiguracionesPage() {
         whatsapp,
         horarios_activo: horariosActivo,
         horario_apertura: horarioApertura,
-        horario_cierre: horarioCierre
+        horario_cierre: horarioCierre,
+        red_instagram: redInstagram,
+        red_facebook: redFacebook,
+        red_tiktok: redTiktok
       });
 
       // Dispatch event to update other client components if listening
@@ -85,7 +97,10 @@ export default function ConfiguracionesPage() {
           whatsapp,
           horarios_activo: horariosActivo,
           horario_apertura: horarioApertura,
-          horario_cierre: horarioCierre
+          horario_cierre: horarioCierre,
+          red_instagram: redInstagram,
+          red_facebook: redFacebook,
+          red_tiktok: redTiktok
         }
       }));
 
@@ -142,6 +157,57 @@ export default function ConfiguracionesPage() {
               <p className="text-xs text-gray-500">
                 Los clientes serán redirigidos a este número de WhatsApp con el detalle de su pedido. Incluye código de país y de área, sin símbolos '+' ni espacios (Ej: 5491123456789).
               </p>
+            </div>
+          </div>
+        </section>
+
+        {/* SECCIÓN REDES SOCIALES */}
+        <section className="bg-white dark:bg-[#0F0F11] rounded-xl shadow-sm border border-gray-200 dark:border-neutral-800 overflow-hidden">
+          <div className="border-b border-gray-100 dark:border-neutral-800 px-6 py-5">
+            <h2 className="text-base font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+              <Share2 className="w-5 h-5 text-gray-500" />
+              Redes Sociales
+            </h2>
+          </div>
+          
+          <div className="p-6 space-y-4">
+            <div className="space-y-1.5">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Instagram (Enlace)
+              </label>
+              <input
+                type="url"
+                value={redInstagram}
+                onChange={(e) => setRedInstagram(e.target.value)}
+                className="w-full bg-white dark:bg-[#1A1A1E] text-gray-900 dark:text-white border border-gray-300 dark:border-neutral-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 shadow-sm"
+                placeholder="Ej: https://instagram.com/tu_negocio"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Facebook (Enlace)
+              </label>
+              <input
+                type="url"
+                value={redFacebook}
+                onChange={(e) => setRedFacebook(e.target.value)}
+                className="w-full bg-white dark:bg-[#1A1A1E] text-gray-900 dark:text-white border border-gray-300 dark:border-neutral-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 shadow-sm"
+                placeholder="Ej: https://facebook.com/tu_negocio"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                TikTok (Enlace)
+              </label>
+              <input
+                type="url"
+                value={redTiktok}
+                onChange={(e) => setRedTiktok(e.target.value)}
+                className="w-full bg-white dark:bg-[#1A1A1E] text-gray-900 dark:text-white border border-gray-300 dark:border-neutral-700 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 shadow-sm"
+                placeholder="Ej: https://tiktok.com/@tu_negocio"
+              />
             </div>
           </div>
         </section>

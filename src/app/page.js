@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ShoppingCart, X, Plus, Minus, Trash2, Search, Store, Clock, Info, CheckCircle2, ArrowLeft, Send } from "lucide-react";
+import { ShoppingCart, X, Plus, Minus, Trash2, Search, Store, Clock, Info, CheckCircle2, ArrowLeft, Send, ChevronDown, ChevronUp } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 // Función experta para calcular el contraste dinámico (Blanco o Negro)
@@ -17,6 +17,20 @@ function getContrastColor(hexColor) {
     const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
     return (yiq >= 128) ? '#000000' : '#FFFFFF';
 }
+
+// Funciones expertas para verificar y obtener descuentos individuales
+const isDiscountActive = (prod) => {
+    if (!prod || !prod.con_descuento || !prod.precio_descuento) return false;
+    if (prod.descuento_hasta) {
+        const limite = new Date(prod.descuento_hasta);
+        if (new Date() >= limite) return false;
+    }
+    return true;
+};
+
+const obtenerPrecioActual = (prod) => {
+    return isDiscountActive(prod) ? prod.precio_descuento : prod.precio;
+};
 
 // ----------------------------------------------------
 // NATIVE SOCIAL ICONS
@@ -66,6 +80,11 @@ function CheckoutBull({ negocio, carrito, total, onBack, brandColor, brandTextCo
     const [aclaraciones, setAclaraciones] = useState("");
     const [errorNombre, setErrorNombre] = useState("");
     const [errorDireccion, setErrorDireccion] = useState("");
+    const [expandedItems, setExpandedItems] = useState({});
+
+    const toggleExpand = (idUnico) => {
+        setExpandedItems(prev => ({ ...prev, [idUnico]: !prev[idUnico] }));
+    };
 
     const enviarPedido = () => {
         let hasErrors = false;
@@ -229,38 +248,91 @@ function CheckoutBull({ negocio, carrito, total, onBack, brandColor, brandTextCo
                 <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-5 space-y-4 shadow-sm">
                     <h3 className="text-sm font-black uppercase tracking-wider text-[var(--brand)] mb-2">Detalles del Pedido</h3>
                     <div className="divide-y divide-[var(--border)]">
-                        {carrito.map((item) => (
-                            <div key={item.idUnico} className="py-3 flex justify-between gap-4 text-sm font-medium">
-                                <div className="space-y-1">
-                                    <p className="font-bold text-[var(--text-main)] uppercase tracking-tight leading-tight">
-                                        {item.cantidad}x {item.producto.nombre}
-                                    </p>
-                                    {item.variante && (
-                                        <p className="text-[10px] text-[var(--text-muted)] font-semibold">
-                                            Variante: {item.variante.nombre}
-                                        </p>
-                                    )}
-                                    {item.adicionales && item.adicionales.length > 0 && (
-                                        <p className="text-[10px] text-[var(--text-muted)] leading-tight">
-                                            + Extras: {item.adicionales.map(a => a.nombre).join(", ")}
-                                        </p>
-                                    )}
-                                    {item.ingredientesRemovidos && item.ingredientesRemovidos.length > 0 && (
-                                        <p className="text-[10px] text-[var(--text-muted)] leading-tight">
-                                            - Sin: {item.ingredientesRemovidos.join(", ")}
-                                        </p>
-                                    )}
-                                    {item.notes && (
-                                        <p className="text-[10px] text-[var(--text-muted)] italic font-normal">
-                                            Nota: "{item.notes}"
-                                        </p>
+                        {carrito.map((item) => {
+                            const isExpanded = !!expandedItems[item.idUnico];
+                            const basePrice = item.variante ? item.variante.precio : item.producto.precio;
+                            const hasDiscount = isDiscountActive(item.producto) && !item.variante;
+
+                            return (
+                                <div key={item.idUnico} className="py-3 flex flex-col gap-2 text-sm font-medium">
+                                    <div 
+                                        onClick={() => toggleExpand(item.idUnico)}
+                                        className="flex justify-between items-center cursor-pointer hover:opacity-85 transition-opacity"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            {isExpanded ? <ChevronUp className="w-4 h-4 text-[var(--brand)] shrink-0" /> : <ChevronDown className="w-4 h-4 text-[var(--text-muted)] shrink-0" />}
+                                            <p className="font-bold text-[var(--text-main)] uppercase tracking-tight leading-tight">
+                                                {item.cantidad}x {item.producto.nombre}
+                                            </p>
+                                        </div>
+                                        <span className="font-black text-[var(--text-main)] shrink-0">
+                                            ${((item.precioFinal || item.producto.precio) * item.cantidad).toFixed(0)}
+                                        </span>
+                                    </div>
+
+                                    {isExpanded && (
+                                        <div className="pl-6 pr-2 py-2 bg-[var(--bg-main)] rounded-xl border border-[var(--border)] text-xs space-y-2 animate-slide-up text-[var(--text-muted)]">
+                                            {hasDiscount ? (
+                                                <>
+                                                    <div className="flex justify-between">
+                                                        <span>Precio Base (Original):</span>
+                                                        <span className="line-through text-gray-500">${item.producto.precio.toFixed(0)}</span>
+                                                    </div>
+                                                    <div className="flex justify-between text-red-500 font-bold">
+                                                        <span>Precio Base (Oferta):</span>
+                                                        <span>${item.producto.precio_descuento.toFixed(0)}</span>
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                <div className="flex justify-between">
+                                                    <span>Precio Base:</span>
+                                                    <span className="font-bold text-[var(--text-main)]">${basePrice.toFixed(0)}</span>
+                                                </div>
+                                            )}
+
+                                            {item.variante && (
+                                                <div className="flex justify-between">
+                                                    <span>Variante:</span>
+                                                    <span className="font-bold text-[var(--brand)] uppercase tracking-tighter">{item.variante.nombre}</span>
+                                                </div>
+                                            )}
+
+                                            {item.adicionales && item.adicionales.length > 0 && (
+                                                <div className="space-y-1">
+                                                    <span className="font-black uppercase tracking-wider text-[9px] text-[var(--text-muted)]">Extras Agregados:</span>
+                                                    <div className="space-y-0.5 pl-2">
+                                                        {item.adicionales.map(ad => (
+                                                            <div key={ad.id} className="flex justify-between">
+                                                                <span>+ {ad.nombre}</span>
+                                                                <span className="font-bold text-[var(--text-main)]">+${ad.precio.toFixed(0)}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {item.ingredientesRemovidos && item.ingredientesRemovidos.length > 0 && (
+                                                <div className="space-y-1">
+                                                    <span className="font-black uppercase tracking-wider text-[9px] text-red-500/70">Ingredientes Quitados:</span>
+                                                    <div className="pl-2 flex flex-wrap gap-1">
+                                                        {item.ingredientesRemovidos.map(ing => (
+                                                            <span key={ing} className="bg-red-500/10 text-red-500 px-2 py-0.5 rounded-full text-[10px] font-bold">Sin {ing}</span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {item.notes && (
+                                                <div className="pt-1 border-t border-[var(--border)]">
+                                                    <span className="font-black uppercase tracking-wider text-[9px] text-[var(--text-muted)]">Notas:</span>
+                                                    <p className="italic text-[var(--text-main)] pl-2 font-normal">"{item.notes}"</p>
+                                                </div>
+                                            )}
+                                        </div>
                                     )}
                                 </div>
-                                <span className="font-bold text-[var(--text-main)] shrink-0">
-                                    ${((item.precioFinal || item.producto.precio) * item.cantidad).toFixed(0)}
-                                </span>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
 
@@ -390,6 +462,8 @@ function PlantillaBull({ negocio, categorias, productos }) {
         }
     }, [isClosed, vistaActual]);
 
+    const red_instagram = negocio.red_instagram || "";
+    const red_facebook = negocio.red_facebook || "";
     const tiktokUrl = negocio.red_tiktok || "";
 
     // Parse theme and logo configuration from tema_tienda column
@@ -443,7 +517,7 @@ function PlantillaBull({ negocio, categorias, productos }) {
     };
 
     const agregarAlCarritoDesdeModal = () => {
-        const precioBase = varianteSeleccionada ? varianteSeleccionada.precio : productoModal.precio;
+        const precioBase = varianteSeleccionada ? varianteSeleccionada.precio : obtenerPrecioActual(productoModal);
         const precioAdicionales = adicionalesSeleccionados.reduce((acc, a) => acc + (a.precio || 0), 0);
         const precioItem = precioBase + precioAdicionales;
 
@@ -479,13 +553,29 @@ function PlantillaBull({ negocio, categorias, productos }) {
         }));
     };
 
-    const totalCarrito = carrito.reduce((acc, item) => acc + (item.precioFinal || item.producto.precio) * item.cantidad, 0);
+    const totalCarrito = carrito.reduce((acc, item) => acc + (item.precioFinal || obtenerPrecioActual(item.producto)) * item.cantidad, 0);
     const cantidadItems = carrito.reduce((acc, item) => acc + item.cantidad, 0);
 
     const productosFiltrados = productos.filter(p => {
         const coincideCategoria = categoriaActiva === "TODOS" || p.categoria_id === categoriaActiva;
         const coincideBusqueda = p.nombre.toLowerCase().includes(busqueda.toLowerCase()) || (p.descripcion && p.descripcion.toLowerCase().includes(busqueda.toLowerCase()));
         return coincideCategoria && coincideBusqueda;
+    }).sort((a, b) => {
+        // 1. Descuentos activos primero
+        const aDesc = isDiscountActive(a);
+        const bDesc = isDiscountActive(b);
+        if (aDesc && !bDesc) return -1;
+        if (!aDesc && bDesc) return 1;
+
+        // 2. Orden personalizado (orden descendente: números más altos primero)
+        const aOrden = a.orden || 0;
+        const bOrden = b.orden || 0;
+        if (aOrden !== bOrden) {
+            return bOrden - aOrden;
+        }
+
+        // 3. Últimos creados primero (created_at descendente)
+        return new Date(b.created_at) - new Date(a.created_at);
     });
 
     const overlayOpacity = negocio.hero_opacidad !== null ? negocio.hero_opacidad / 100 : 0.6;
@@ -635,10 +725,15 @@ function PlantillaBull({ negocio, categorias, productos }) {
                             ) : (
                                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
                                     {productosFiltrados.map(prod => (
-                                        <article key={prod.id} onClick={() => abrirModalProducto(prod)} className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl overflow-hidden hover:border-[var(--brand)] transition-all cursor-pointer group flex flex-col h-full shadow-sm hover:shadow-md">
+                                        <article key={prod.id} onClick={() => abrirModalProducto(prod)} className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl overflow-hidden hover:border-[var(--brand)] transition-all cursor-pointer group flex flex-col h-full shadow-sm hover:shadow-md relative">
 
                                             {/* IMAGEN 1:1 PERFECTA */}
                                             <div className="relative w-full aspect-square bg-[var(--bg-hover)] overflow-hidden border-b border-[var(--border)] shrink-0">
+                                                {isDiscountActive(prod) && (
+                                                    <div className="absolute top-2 left-2 bg-red-600 text-white text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md shadow-md z-10">
+                                                        Oferta
+                                                    </div>
+                                                )}
                                                 {prod.imagen_url ? (
                                                     <img src={prod.imagen_url} alt={prod.nombre} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                                                 ) : (
@@ -653,7 +748,16 @@ function PlantillaBull({ negocio, categorias, productos }) {
 
                                                 <button className="mt-auto w-full py-1.5 md:py-2 px-2.5 rounded-lg md:rounded-xl bg-[var(--brand-soft)] text-[var(--brand)] text-[10px] md:text-xs font-black uppercase tracking-wider group-hover:bg-[var(--brand)] group-hover:text-[var(--brand-text)] transition-all flex justify-between items-center border border-[var(--brand-soft)]">
                                                     <span>Agregar</span>
-                                                    <span>${prod.precio.toFixed(0)}</span>
+                                                    <span className="flex items-center gap-1.5">
+                                                        {isDiscountActive(prod) ? (
+                                                            <>
+                                                                <span className="line-through opacity-50 text-[9px] font-normal">${prod.precio.toFixed(0)}</span>
+                                                                <span>${prod.precio_descuento.toFixed(0)}</span>
+                                                            </>
+                                                        ) : (
+                                                            <span>${prod.precio.toFixed(0)}</span>
+                                                        )}
+                                                    </span>
                                                 </button>
                                             </div>
 
@@ -724,14 +828,16 @@ function PlantillaBull({ negocio, categorias, productos }) {
                             </div>
 
                             {/* Columna 4: Redes Sociales */}
-                            <div className="flex flex-col items-center md:items-end gap-1.5">
-                                <h5 className="font-black uppercase text-[9px] tracking-widest mb-1.5 text-white/50">Redes Sociales</h5>
-                                <div className="flex gap-2">
-                                    {negocio.red_instagram && <a href={negocio.red_instagram} target="_blank" rel="noreferrer" className="w-9 h-9 rounded-xl bg-white/10 border border-white/10 text-white hover:bg-white/20 transition-colors flex items-center justify-center"><InstagramIcon className="w-4.5 h-4.5" /></a>}
-                                    {negocio.red_facebook && <a href={negocio.red_facebook} target="_blank" rel="noreferrer" className="w-9 h-9 rounded-xl bg-white/10 border border-white/10 text-white hover:bg-white/20 transition-colors flex items-center justify-center"><FacebookIcon className="w-4.5 h-4.5" /></a>}
-                                    {tiktokUrl && <a href={tiktokUrl} target="_blank" rel="noreferrer" className="w-9 h-9 rounded-xl bg-white/10 border border-white/10 text-white hover:bg-white/20 transition-colors flex items-center justify-center"><TikTokIcon className="w-4 h-4" /></a>}
+                            {(red_instagram || red_facebook || tiktokUrl) && (
+                                <div className="flex flex-col items-center md:items-end gap-1.5">
+                                    <h5 className="font-black uppercase text-[9px] tracking-widest mb-1.5 text-white/50">Redes Sociales</h5>
+                                    <div className="flex gap-2">
+                                        {red_instagram && <a href={red_instagram} target="_blank" rel="noreferrer" className="w-9 h-9 rounded-xl bg-white/10 border border-white/10 text-white hover:bg-white/20 transition-colors flex items-center justify-center"><InstagramIcon className="w-4.5 h-4.5" /></a>}
+                                        {red_facebook && <a href={red_facebook} target="_blank" rel="noreferrer" className="w-9 h-9 rounded-xl bg-white/10 border border-white/10 text-white hover:bg-white/20 transition-colors flex items-center justify-center"><FacebookIcon className="w-4.5 h-4.5" /></a>}
+                                        {tiktokUrl && <a href={tiktokUrl} target="_blank" rel="noreferrer" className="w-9 h-9 rounded-xl bg-white/10 border border-white/10 text-white hover:bg-white/20 transition-colors flex items-center justify-center"><TikTokIcon className="w-4.5 h-4.5" /></a>}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
 
                         <div className="max-w-[1400px] mx-auto mt-8 pt-4 border-t border-white/10 text-center font-bold text-[10px] uppercase tracking-widest text-white/60 flex flex-col items-center gap-1.5">
@@ -767,9 +873,29 @@ function PlantillaBull({ negocio, categorias, productos }) {
                             </div>
 
                             <h2 className="text-xl md:text-2xl font-black mb-1 leading-tight tracking-tight uppercase text-[var(--text-main)]">{productoModal.nombre}</h2>
-                            <div className="font-black text-xl text-[var(--brand)] mb-3">
-                                ${( (varianteSeleccionada ? varianteSeleccionada.precio : productoModal.precio) + adicionalesSeleccionados.reduce((acc, a) => acc + (a.precio || 0), 0) ).toFixed(0)}
+                            <div className="font-black text-xl text-[var(--brand)] mb-3 flex items-center gap-2">
+                                {isDiscountActive(productoModal) && !varianteSeleccionada ? (
+                                    <>
+                                        <span className="line-through opacity-45 text-sm">${(productoModal.precio + adicionalesSeleccionados.reduce((acc, a) => acc + (a.precio || 0), 0)).toFixed(0)}</span>
+                                        <span>${(productoModal.precio_descuento + adicionalesSeleccionados.reduce((acc, a) => acc + (a.precio || 0), 0)).toFixed(0)}</span>
+                                    </>
+                                ) : (
+                                    <span>${( (varianteSeleccionada ? varianteSeleccionada.precio : productoModal.precio) + adicionalesSeleccionados.reduce((acc, a) => acc + (a.precio || 0), 0) ).toFixed(0)}</span>
+                                )}
                             </div>
+
+                            {isDiscountActive(productoModal) && (
+                                <div className="bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl p-3 text-[11px] font-bold flex items-center gap-2 mb-4 animate-fade-in">
+                                    <Clock className="w-3.5 h-3.5 shrink-0" />
+                                    <span>
+                                        {productoModal.descuento_hasta ? (
+                                            `Oferta válida hasta el ${new Date(productoModal.descuento_hasta).toLocaleDateString()} a las ${new Date(productoModal.descuento_hasta).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} hs`
+                                        ) : (
+                                            "¡Oferta especial por tiempo limitado!"
+                                        )}
+                                    </span>
+                                </div>
+                            )}
 
                             {productoModal.descripcion && (
                                 <div className="bg-[var(--bg-main)] p-4 rounded-xl border border-[var(--border)] mb-5">
@@ -877,7 +1003,7 @@ function PlantillaBull({ negocio, categorias, productos }) {
                                 </div>
                             </div>
                             <button onClick={agregarAlCarritoDesdeModal} className="w-full bg-[var(--brand)] text-[var(--brand-text)] font-black h-12 rounded-xl hover:opacity-90 transition-all shadow-md flex items-center justify-center gap-2 uppercase tracking-wide text-xs border border-transparent">
-                                Agregar • ${(((varianteSeleccionada ? varianteSeleccionada.precio : productoModal.precio) + adicionalesSeleccionados.reduce((acc, a) => acc + (a.precio || 0), 0)) * cantidadModal).toFixed(0)}
+                                Agregar • ${(((varianteSeleccionada ? varianteSeleccionada.precio : obtenerPrecioActual(productoModal)) + adicionalesSeleccionados.reduce((acc, a) => acc + (a.precio || 0), 0)) * cantidadModal).toFixed(0)}
                             </button>
                         </div>
                     </div>
