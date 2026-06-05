@@ -122,7 +122,7 @@ export default function DashboardLayout({ children }) {
   if (loading) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-50 dark:bg-[#0a0a0a]">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-green-600 border-t-transparent"></div>
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-red-600 border-t-transparent"></div>
       </div>
     );
   }
@@ -231,6 +231,17 @@ export default function DashboardLayout({ children }) {
               <Link href="/" target="_blank" className="flex items-center gap-3 rounded-lg px-3 py-3 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white">
                 <ExternalLink className="h-5 w-5" /> Ver catálogo online
               </Link>
+              <div className="my-2 border-t border-gray-100 dark:border-neutral-800"></div>
+              <button
+                onClick={() => {
+                  setMenuAbierto(false);
+                  handleCerrarSesion();
+                }}
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/20 transition-all font-medium text-sm text-left cursor-pointer"
+              >
+                <LogOut className="h-5 w-5" />
+                Cerrar sesión
+              </button>
             </nav>
           </aside>
           <div className="flex-1" onClick={() => setMenuAbierto(false)}></div>

@@ -449,7 +449,7 @@ export default function PortadaConfigPage() {
 
           <div className="flex flex-col sm:flex-row justify-end items-center gap-4">
             {mensaje.texto && (
-              <div className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md animate-in fade-in ${mensaje.tipo === "exito" ? "bg-green-600 text-white" : "bg-red-600 text-white"}`}>
+              <div className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md animate-in fade-in ${mensaje.tipo === "exito" ? "bg-red-600 text-white" : "bg-red-950 text-red-400 border border-red-900"}`}>
                 {mensaje.tipo === "exito" ? <CheckCircle2 className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
                 {mensaje.texto}
               </div>

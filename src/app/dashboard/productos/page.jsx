@@ -750,7 +750,7 @@ export default function ProductosPage() {
                         <td className="py-4 px-6">
                           {prod.con_descuento && prod.precio_descuento ? (
                             <div className="flex flex-col">
-                              <span className="text-sm font-bold text-green-600 dark:text-green-400">${prod.precio_descuento}</span>
+                              <span className="text-sm font-bold text-red-600 dark:text-red-400">${prod.precio_descuento}</span>
                               {prod.descuento_hasta && (
                                 <span className="text-[10px] text-gray-400">
                                   {new Date(prod.descuento_hasta) < new Date() ? 'Expirado' : `Vence: ${new Date(prod.descuento_hasta).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`}
