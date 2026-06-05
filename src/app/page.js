@@ -403,18 +403,9 @@ function PlantillaBull({ negocio, categorias, productos }) {
 
     // Calcular si está cerrado leyendo directamente de las columnas
     const calcularCerrado = () => {
-        const cf = negocio.campos_formulario || {};
-        const horariosCf = cf.horarios || {};
-
-        const horariosActivo = negocio.horarios_activo || horariosCf.activo || false;
-
-        const horarioApertura = (negocio.horarios_activo && negocio.horario_apertura)
-            ? negocio.horario_apertura 
-            : (horariosCf.apertura || negocio.horario_apertura || "");
-
-        const horarioCierre = (negocio.horarios_activo && negocio.horario_cierre)
-            ? negocio.horario_cierre 
-            : (horariosCf.cierre || negocio.horario_cierre || "");
+        const horariosActivo = negocio.horarios_activo || false;
+        const horarioApertura = negocio.horario_apertura || "";
+        const horarioCierre = negocio.horario_cierre || "";
 
         if (!horariosActivo) return false;
         if (!horarioApertura || !horarioCierre) return false;
@@ -582,18 +573,6 @@ function PlantillaBull({ negocio, categorias, productos }) {
 
     return (
         <div style={themeStyles} className="bg-[var(--bg-main)] text-[var(--text-main)] min-h-screen font-sans selection:bg-[var(--brand)] selection:text-[var(--brand-text)] relative transition-colors duration-300">
-
-            {/* MARCA DE AGUA WHAASY (Solo plan free) */}
-            {negocio.plan === 'free' && (
-                <a
-                    href="https://whaasy.vercel.app?ref=tienda_free"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="bg-[#22c55e] text-white text-[10px] sm:text-xs font-bold uppercase tracking-widest py-1.5 px-4 text-center block hover:bg-[#16a34a] transition-colors shadow-sm z-50 relative"
-                >
-                    Creá tu menú gratis con Whaasy 🚀
-                </a>
-            )}
 
             <style dangerouslySetInnerHTML={{
                 __html: `
@@ -842,11 +821,6 @@ function PlantillaBull({ negocio, categorias, productos }) {
 
                         <div className="max-w-[1400px] mx-auto mt-8 pt-4 border-t border-white/10 text-center font-bold text-[10px] uppercase tracking-widest text-white/60 flex flex-col items-center gap-1.5">
                             <span>&copy; {new Date().getFullYear()} {negocio.nombre}.</span>
-                            {negocio.plan === 'free' && (
-                                <a href="https://whaasy.vercel.app?ref=tienda_free" target="_blank" rel="noopener noreferrer" className="text-green-300 hover:underline transition-all">
-                                    Creado gratis con Whaasy
-                                </a>
-                            )}
                         </div>
                     </footer>
                 </div>

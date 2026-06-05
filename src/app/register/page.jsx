@@ -65,8 +65,6 @@ export default function RegisterPage() {
               user_id: data.user.id,
               nombre: "Bendita Burger",
               slug: "benditaburger-" + Math.floor(1000 + Math.random() * 9000),
-              plan: "pro",
-              estado_pago: "activo",
               whatsapp: "5491133334444",
               color_principal: "#EAB308",
               tema_tienda: "dark"

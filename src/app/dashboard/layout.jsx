@@ -90,8 +90,6 @@ export default function DashboardLayout({ children }) {
             user_id: user.id,
             nombre: "Bendita Burger",
             slug: "bendita",
-            plan: "pro",
-            estado_pago: "activo",
             whatsapp: "5491133334444",
             color_principal: "#f5290f",
             tema_tienda: "light"
@@ -135,11 +133,7 @@ export default function DashboardLayout({ children }) {
     { nombre: "Configuración", ruta: "/dashboard/configuracion", icono: Settings },
   ];
 
-  // Cálculo para los carteles grandes del Dashboard
-  const ahoraGlobal = new Date();
-  const renovacionGlobal = negocio?.is_trial ? new Date(negocio.trial_ends_at) : (negocio?.proxima_renovacion ? new Date(negocio.proxima_renovacion) : new Date());
-  const suspensionGlobal = negocio?.is_trial ? renovacionGlobal : (negocio?.fecha_suspension ? new Date(negocio.fecha_suspension) : renovacionGlobal);
-  const enGraciaActiva = !negocio?.is_trial && negocio?.estado_pago === 'activo' && ahoraGlobal > renovacionGlobal && ahoraGlobal < suspensionGlobal;
+
 
   return (
     <div className="fixed inset-0 flex flex-row overflow-hidden bg-gray-50 dark:bg-[#0a0a0a]">
